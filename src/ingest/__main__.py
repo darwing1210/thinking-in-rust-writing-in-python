@@ -102,8 +102,9 @@ def _jobs(mode: str, url: str) -> int:
 
     from ingest.after.ingest import ingest
     from ingest.after.jobs import Pending, finish, start
+    from ingest.after.types import JobId, Url
 
-    pending = Pending(job_id="job-1", url=url)
+    pending = Pending(job_id=JobId("job-1"), url=Url(url))
     processing = start(pending)
     finished = finish(processing, ingest(url))
     print(type(finished).__name__, finished)

@@ -2,16 +2,17 @@
 
 **Event:** Alamo Python, Geekdom, November 16
 **Length:** ~40 minutes
-**Deck:** `slides.html` (21 slides)
+**Deck:** `slides.html` (23 slides)
 **Repo root:** one directory up from this file
 
 Spoken text is in roman. Stage directions are in *italics*. Do not read
 the italics. Cut anything marked **[cut]** if you run long. Talk like you
-are explaining this to a coworker at the whiteboard — not like a paper.
+are explaining this to a coworker at the whiteboard — conversational,
+punchy, but technically grounded.
 
 ---
 
-## 0:00–5:00 — Introduction
+## 0:00–5:00 — Introduction & Disclaimer
 ### Slides 1–5
 
 ### Slide 1 — Title
@@ -28,13 +29,13 @@ We are stealing *ideas*. We keep writing Python.
 
 ### Slide 2 — Who this is for
 
-This is for people who write Python at work. APIs, jobs, scripts.
+This is for people who write Python at work. APIs, jobs, pipelines.
 
 It is also for anyone who has returned `None` and hoped the next person
 would know why.
 
-And it is for anyone who pasted a function into ChatGPT, got code that
-ran, and still felt weird about it.
+And it is for anyone who pasted a function into ChatGPT or Claude, got code
+that ran, and still felt weird about it.
 
 *Hands.* Who here has shipped Python that an AI wrote at least part of,
 in the last six months?
@@ -45,12 +46,13 @@ Yeah. That is this room.
 
 ### Slide 3 — Forty minutes
 
-Three habits. Then we teach them to the AI. Then questions.
+Four architectural habits. Then we teach them to AI. Then questions.
 
-1. Name the failure. Don’t shrug with `None`.
-2. Don’t let a job be “done” and empty.
-3. Stop surprise edits when two functions share a list.
-4. Write those habits down so the coding agent copies *those*, not the bugs.
+1. Explicit Errors: Name the failure. Don’t shrug with `None`.
+2. Typestates: Gate methods by lifecycle state.
+3. Compiler Contracts: Zero-cost `NewType` and `assert_never`.
+4. The Ownership Law: Aliasing XOR Mutability.
+5. The AI Sandbox: The compiler as the agent's mechanical leash.
 
 Same tiny app the whole night: we fetch an article, check it, tag it, and
 track a job. No network. Four fake URLs. After the meetup you can run every
@@ -65,8 +67,8 @@ AI is writing your Python, you can teach it those parts too.
 
 Why the second sentence matters: the AI copies whatever is already in the
 file. If the file says `return None`, you get more `return None`. If the
-file names the failure, you get named failures — if you bother to write
-that down.
+file has strict compiler contracts, the AI gets instant feedback when it
+hallucinates.
 
 Honesty, three times tonight: **Python will not stop you.** A type checker
 can nag. Frozen objects slow you down. None of that is Rust’s compiler.
@@ -84,17 +86,16 @@ failure. Don’t let a job be done and empty. Don’t share a list and then
 act surprised. Python can do that. So can Go, TypeScript, Java, whatever
 you already write.
 
-Rust just nags you about them. That’s why it’s a useful teacher tonight.
+Rust just makes them hard to ignore. That’s why it’s a useful teacher tonight.
 Nobody here is being asked to rewrite their app.
 
 One more reason this matters: AI copies the project in front of it. If
 the repo has clear habits, the model writes clearer code. If the repo
-shrugs, the model shrugs too. The patterns help you. They also help the
-model.
+shrugs, the model shrugs too.
 
 ---
 
-## 5:00–12:00 — Name the failure
+## 5:00–12:00 — Pattern 1: Explicit Error Boundaries
 ### Slides 6–10
 *If only one demo works, it is this one.*
 
@@ -172,9 +173,6 @@ You should see `retryable:`.
 
 Same catalog. Same timeout. Now you can tell them apart.
 
-**[cut]** If you have thirty seconds, run missing and empty-title on
-`--mode after` so they see `not_found:` and `validation_failed:`.
-
 ### Slide 10 — When not to bother
 
 Use this when “it failed” is not enough. When someone has to retry, skip,
@@ -184,265 +182,222 @@ Skip it when you actually have a bug — just raise. Skip it if the team
 already has one clear exception style. Skip it for a script you will
 delete on Friday.
 
-**[cut]** Please do not add a Result library. Two classes is enough.
-
-And Python still will not stop you. If you grab `.value` without looking,
-the type checker *might* complain, and the program *will still run* until
-it blows up. This is a habit, not a lock.
+Please do not add a Result library. Two classes is enough.
 
 ---
 
-## 12:00–21:00 — Don’t let “done” be empty
+## 12:00–20:00 — Pattern 2: Typestates & Lifecycle Gating
 ### Slides 11–14
 
 ### Slide 11 — The form with extra boxes
 
 Second function you have written: a job.
 
-Status is a string. Result might be there. Error might be there.
+Status is a string: "pending", "processing", "completed", "failed".
 
-That is a form with too many blank boxes. You can tick “completed” and
-leave the result empty. You can tick “failed” and leave the error empty.
-You can fail, then complete, and the old error is still sitting there.
+Result might be there. Error might be there.
 
-Python will let you. Production will store it.
+And look at the methods: `.complete()` and `.fail()`.
+What stops someone from calling `job.complete()` before the job was even started?
+Nothing! You have to write `if self.status != "running": raise InvalidStateError`.
+That is a runtime check. It only blows up when the user clicks the button.
 
-*Hands, optional.* Who has written `if job.status == "completed" and job.result:`
-and hated the `and job.result` part?
+### Slide 12 — The Typestate Pattern
 
-That extra check is you not trusting your own object.
+In Rust, they use something called **Typestates**.
+Instead of one big mutable object with a status flag, each state is its
+own type.
 
-### Slide 12 — Rust’s sentence
+And state transitions consume the old state: `fn start(self) -> Processing`.
+Methods only exist where they make sense!
+A `Pending` job has a `.start()` method. It does NOT have a `.finish()` method.
+You cannot finish a job that hasn't started, because that method literally
+does not exist.
 
-Rust people repeat this until it is a tattoo: **if it shouldn’t happen,
-don’t let the object exist.**
+### Slide 13 — Typestates in Python
 
-Pending is one shape. Running is another. Done always carries the article.
-Failed always carries the reason.
+In Python:
 
-You already write `int | str`. Same idea, for a job.
+`Pending` has `def start(self) -> Processing: ...`
+`Processing` has `def finish(self, res) -> Completed | Failed: ...`
 
-### Slide 13 — Four shapes
+`Completed` holds an `Article`. `Failed` holds an `IngestError`.
 
-A completed job without an article is not a missing field. You cannot
-build it. You have to pass an `Article`.
+A completed job without an article cannot be built.
+And calling `pending.finish(...)`?
+It is not an `if/raise` check at runtime.
 
-And we don’t flip a string on the same object. We return a *new* shape.
+### Slide 14 — Pyright catches it at compile time
 
-*Demo.*
-
-```bash
-uv run python -m ingest jobs --mode before --url https://news.example/missing
-```
-
-Status `"completed"`, result `null`. The miss became a successful empty
-job. That is a paging story.
-
-```bash
-uv run python -m ingest jobs --mode after --url https://news.example/missing
-```
-
-`Failed`, with `NotFound`. The state and the reason arrived together.
-
-**[cut]** Optional type-check:
+*Show the slide / terminal demo.*
 
 ```bash
-uv run pyright --project typecheck/invalid
+uv run pyright typecheck/invalid/cannot_finish_pending_job.py
 ```
 
-Pending has no `.article`. That is the point.
+`Cannot access attribute "finish" for class "Pending"`.
 
-### Slide 14 — When not to bother
-
-Use this for jobs, orders, payments — anything with a life cycle. Anything
-where “you shouldn’t read that field yet.”
-
-Skip it for a nickname that really is optional. Skip it for a one-off
-parser you will throw away.
-
-Python still will not yell like Rust if you forget a branch. Keep the list
-of shapes small. Test each one.
+The compiler stops it before the code ever runs.
+If a junior engineer or an AI agent hallucinates calling `.finish()` on a
+pending job, Pyright rejects it on the spot.
 
 ---
 
-## 21:00–27:00 — Stop surprise edits
-### Slides 15–17
+## 20:00–26:00 — Pattern 3: Compiler Contracts (NewType & assert_never)
+### Slides 15–16
 
-### Slide 15 — The weather story
+### Slide 15 — Two quiet killers
 
-Third function. We add word count, language, topics.
+Two bugs that pass unit tests and blow up production:
 
-There is a module-level list called `SHARED_TOPICS`. First article is
-about bike lanes, so we append `transportation`. Second article is the
-weather.
+**1. Swapped arguments:** Look at `def fetch(url: str, job_id: str): ...`
+Someone calls `fetch(my_job_id, my_url)`.
+Both are strings! Pyright says: looks good. Tests pass. Production corrupts.
+
+**2. Silent match fallthrough:** You write a `match job:` statement.
+Next month someone adds `Cancelled` to the `Job` union.
+What does Python do? It silently skips the unhandled case and returns `None`!
+
+### Slide 16 — NewType & assert_never
+
+Rust fixes both at compile time. Here is how Python does it:
+
+**1. Zero-cost `NewType`:**
+```python
+JobId = NewType("JobId", str)
+Url = NewType("Url", str)
+```
+At runtime: literally just strings. Zero performance cost, zero memory overhead.
+At static type check: swapping them fails the build immediately!
+
+**2. Exhaustiveness with `assert_never`:**
+At the end of your `match`, add:
+```python
+case _ as unreachable:
+    assert_never(unreachable)
+```
+If anyone adds `Cancelled` to `Job` anywhere in the codebase, Pyright breaks
+across CI until every `match` handles it.
+Now Python's `match` has the same exhaustiveness guarantee as Rust's compiler.
+
+---
+
+## 26:00–32:00 — Pattern 4: The Ownership Law (Aliasing XOR Mutability)
+### Slides 17–19
+
+### Slide 17 — The weather story
+
+Third function: enrichment. Adding topics to an article.
+
+There is a module list `SHARED_TOPICS = ["news"]`.
+First article is bike lanes, so we append `transportation`.
+Second article is the weather.
 
 The weather story comes out tagged transportation.
+Why? Because `setdefault` shared the list. Mutating it in place affected
+every future article in the process.
 
-Why? We did not copy the list. We handed out the *same* list. `append`
-is process-wide.
+### Slide 18 — Aliasing XOR Mutability
 
-This is the bug that fails depending on test order. This is the bug that
-gets worse with two requests at once. And it is the bug an AI will
-recreate, because mutating dicts in place looks like “normal Python.”
+Rust’s entire borrow checker is based on one invariant:
+> **You can have many shared readers, OR one exclusive writer. Never both.**
 
-*Hands, optional.* Who has had a test pass alone and fail in CI?
+If multiple parts of your application hold references to the same object,
+**none of them may mutate it in place**.
 
-### Slide 16 — Copy, don’t poke
+*Fun fact:* Did you know Python has a borrow checker?
+If you create a `memoryview` on a bytearray, and try to resize the bytearray
+while the view is open, Python raises:
+`BufferError: Existing exports of data: object cannot be re-allocated`.
+Python's core team literally implemented a borrow check to prevent memory bugs!
 
-Rust’s boring idea: if something changes, you should see the assignment.
+### Slide 19 — Solution & Demo
 
-We are not doing the borrow checker tonight. We are doing: freeze the
-article, keep topics as a tuple, return a new copy with `replace`.
-
-Building a fresh list *inside* the function is fine. Sharing that list
-with the next article is not.
-
-Each step takes an article and returns an article. The original the caller
-is holding is still the original. Tests get easier: you keep the input.
-
-### Slide 17 — Demo
-
-```bash
-uv run python -m ingest pipeline --mode before
-```
-
-Second topics include transportation.
+The Python rule:
+1. Data passed across boundaries must be immutable (`@dataclass(frozen=True)`, `tuple`).
+2. Private mutation inside a function is fine—because no alias exists yet!
+3. Transformations return a new copy with `replace()`.
 
 ```bash
-uv run python -m ingest pipeline --mode after
+uv run python -m ingest pipeline --mode before  # leaked tags!
+uv run python -m ingest pipeline --mode after   # isolated!
 ```
-
-First has it. Second does not.
-
-Freeze the values you pass around — queue payloads, domain objects. A
-local list inside a function is still fine. A giant buffer you cannot
-afford to copy? Mutation is the feature. Don’t freeze every integer
-because a slide said so.
-
-`frozen=True` is a speed bump, not a lock.
 
 ---
 
-## 27:00–36:00 — Teach the AI
-### Slides 18–19
-
-### Slide 18 — It copies you
-
-If you paste the “before” code into an AI and say “review this,” you often
-get a review that is *correct* and still useless.
-
-I did not want wifi to decide this section. The repo has a prepared demo.
-
-Typical review, condensed:
-
-- Add a TypedDict
-- Log the timeout
-- Catch Exception
-- Make an Enum for status
-- Keep returning `None`
-
-It looks more professional. The three bugs are still there. A log line
-does not give the next function a retry branch. An Enum plus “result might
-be missing” still lets you complete with nothing.
-
-The AI is not bad at Python. It is extremely good at finishing the pattern
-in front of it. “Make it typed” is a pattern. “Don’t let done be empty” is
-a different pattern, and it is not the default.
-
-### Slide 19 — Write the habit down
-
-A skill is a markdown file the agent is told to read *before* it reviews.
-Four of them ship in the repo. Plain English:
-
-- name the failure
-- don’t allow empty “done”
-- don’t share a list
-- and don’t gold-plate
-
-Same agent, same code, different instructions.
-
-Live, after the meetup, you can try `prompts/01` versus `prompts/02`.
-Tonight we use the prepared files, because I like finishing on time.
-
-How to judge the diff:
-
-- Did the tests pass? Necessary. Not enough. The *before* tests also pass.
-- Can a new caller misuse this without noticing?
-- Did we add types that don’t remove a real bug?
-- Would I want the next AI to copy this?
-
-Green tests are the floor. The ceiling is whether timeout is a named
-thing, not a shrug.
-
----
-
-## 36:00–40:00 — Steal this, then questions
+## 32:00–37:00 — The AI Sandbox: The Compiler as the Agent's Leash
 ### Slides 20–21
 
-### Slide 20
+### Slide 20 — Why this matters in 2026
 
-Not next quarter. One function this week.
+Here is the punchline of the talk.
 
-Notice a `None` that means two things.
+When you ask an AI coding agent to work on sloppy Python—loose dicts, mutable
+lists, ambiguous `None`, raw strings:
+- The AI hallucinates invalid states.
+- It swaps string IDs.
+- It forgets match branches.
+- The happy-path tests pass, and production quietly degrades.
 
-Give those failures names, if someone has to choose what to do next.
+When you give the AI:
+- Typestates (it can't call invalid methods),
+- `NewType` (it can't swap arguments),
+- `assert_never` (it can't miss cases),
+- Frozen dataclasses (it can't mutate shared state),
 
-Don’t let a job be “done” with nothing in it.
+**The type checker becomes a mechanical leash.**
+The AI runs `pyright`, sees 3 errors where it violated domain constraints,
+and self-corrects *before* opening the PR.
+Strict types are no longer about human ego—they are how we make AI coding safe.
 
-If you change data, return a new copy.
+### Slide 21 — Five skills in the repo
 
-Write four lines in a `SKILL.md` so the AI does it too.
+A skill is a markdown file the agent reads first. Five ship in this repo:
+- `skills/explicit-error-handling`
+- `skills/model-valid-states`
+- `skills/type-driven-contracts`
+- `skills/intentional-immutability`
+- `skills/python-design-review`
 
-Don’t trust “it ran.” Ask if the next person can misuse it.
+Portable across Claude Code, Codex, Cursor, and Hermes.
 
-You do not need all three habits on every file. You need the one that
-matches the bug you are actually shipping.
+---
 
-### Slide 21 — Close
+## 37:00–40:00 — Steal this & Close
+### Slides 22–23
 
-Better Python is not more code. It’s clearer decisions — and teaching the
-AI to make those with you.
+### Slide 22 — Five habits for this week
+
+Not next quarter. Pick one function this week:
+
+1. Return failures as values. Stop returning `None` for two different problems.
+2. Typestates: Gate methods on state dataclasses so illegal calls don't type-check.
+3. Zero-cost IDs: Wrap raw strings with `NewType` to stop argument swapping.
+4. Compile-time exhaustiveness: End closed matches with `assert_never`.
+5. Aliasing XOR Mutability: Private mutation ok; shared mutation forbidden.
+
+### Slide 23 — Close
+
+Better Python is not more code. It’s clearer decisions — and giving our
+AI agents the mechanical guardrails to write safe software.
 
 The repo is `thinking-in-rust-writing-in-python`. Slides, script, skills,
 and the little ingest app. MIT. No cloud.
 
-I will take questions. If the question is “should I rewrite the whole app
-tomorrow,” the answer is no. Pick one function. Give the failure a name.
-Put four lines in a skill. See if the next AI pull request is less
-embarrassing.
+I will take questions.
 
 *Stop. Water. Hands.*
 
 ---
 
-## If the room goes quiet
+## Question Bank
 
-- **Isn’t this just types?** Types are spelling. The design is “which
-  values are allowed to exist.” You can add types and keep the shrug.
-- **Why not a docstring?** People and AIs read the signature more than
-  the prose. `None` is still one value.
-- **Why not Pydantic?** Fine at the edge. Inside, boring dataclasses you
-  can build in a test without a ceremony.
-- **Does match catch everything?** Not like Rust. Keep the list of shapes
-  small. Add a test per shape.
-- **Can I use a Result library?** You can. I didn’t, on purpose. Two
-  classes survive a copy-paste into a skill.
-
-## If you are running long
-
-| You are here | Cut this |
-|---|---|
-| 6 min in, still on slide 4 | Skip the hands. Jump to slide 6. |
-| Pattern 1 demo failed | Read the expected output. Move. |
-| 25 min in, still on jobs | Skip the type-check extra. One pipeline command. |
-| 32 min in, no AI section | Skip the naive file. Read the two review summaries. |
-| 38 min in | Slide 21. One question. |
-
-## Files to open on the projector if you want
-
-- `src/ingest/before/errors.py`
-- `src/ingest/after/ingest.py`
-- `src/ingest/after/jobs.py`
-- `src/ingest/before/pipeline.py`
-- `examples/agent-demo/naive-review.md`
-- `examples/agent-demo/skilled-review.md`
+- **Isn't NewType just a type alias?** No. A type alias `UserId = str` lets you
+  pass any string. `NewType("UserId", str)` creates a distinct type that
+  requires explicit casting, catching swapped arguments.
+- **Does `assert_never` cost anything at runtime?** No. At runtime, if you ever
+  hit that branch, it raises `AssertionError`. But Pyright guarantees at
+  type-check time that the line is unreachable.
+- **Why not use Pydantic for everything?** Pydantic is great for HTTP request/response
+  validation. But inside your core domain, frozen dataclasses with `NewType`
+  have zero overhead and no dependency weight.

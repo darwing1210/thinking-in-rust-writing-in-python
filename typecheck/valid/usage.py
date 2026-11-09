@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from ingest.after.errors import NotFound, Retryable, ValidationFailed
 from ingest.after.ingest import ingest
-from ingest.after.jobs import Completed, Failed, Pending, finish, start
+from ingest.after.jobs import Completed, Failed, Pending, describe
 from ingest.after.pipeline import enrich
 from ingest.after.result import Err, Ok
+from ingest.after.types import JobId, Url
 from ingest.catalog import OK_URL
 
 
@@ -26,8 +27,14 @@ def handle(url: str) -> str:
 
 
 def run_job(url: str) -> Completed | Failed:
-    processing = start(Pending(job_id="job-1", url=url))
-    return finish(processing, ingest(url))
+    # Typestate: Pending -> Processing -> Completed | Failed
+    pending = Pending(job_id=JobId("job-1"), url=Url(url))
+    processing = pending.start()
+    return processing.finish(ingest(url))
+
+
+def inspect_status(job: Pending | Completed | Failed) -> str:
+    return describe(job)
 
 
 def title_of(job: Completed) -> str:

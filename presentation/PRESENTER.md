@@ -10,11 +10,12 @@ uv sync --group dev
 uv run pytest
 uv run ruff check .
 uv run pyright
-uv run pyright --project typecheck/invalid   # expected to fail
+uv run pyright --project typecheck/invalid   # expected to fail with 8 errors
 ```
 
-Open `presentation/slides.html` in a browser. Press `N` once so you know
-where notes live, then hide them. Have a terminal tab in the repo root.
+Open `presentation/slides.html` in a browser (or upload `stealing-good-ideas-from-rust.pptx` to Google Slides).
+Press `N` once so you know where notes live, then hide them.
+Have a terminal tab ready in the repo root.
 
 If wifi dies, skip live agents. Use `examples/agent-demo/`.
 
@@ -23,17 +24,18 @@ If wifi dies, skip live agents. Use `examples/agent-demo/`.
 | Min | Section | Slides | Demo |
 |---:|---|---|---|
 | 0–5 | Intro + disclaimer | 1–5 | none |
-| 5–12 | Name the failure | 6–10 | `ingest demo` timeout before/after |
-| 12–21 | Don’t let “done” be empty | 11–14 | `ingest jobs` missing before/after |
-| 21–27 | Stop surprise edits | 15–17 | `ingest pipeline` before/after |
-| 27–36 | Agents + skills | 18–19 | read naive vs skilled reviews |
-| 36–40 | Takeaways, Q&A | 20–21 | repo URL |
+| 5–12 | Explicit Errors | 6–10 | `ingest demo` timeout before/after |
+| 12–20 | Typestates & Lifecycle Gating | 11–14 | `cannot_finish_pending_job.py` |
+| 20–26 | Compiler Contracts | 15–16 | `NewType` & `assert_never` checks |
+| 26–32 | Ownership: Aliasing XOR Mutability | 17–19 | `ingest pipeline` before/after |
+| 32–37 | The AI Sandbox | 20–21 | read naive vs skilled reviews |
+| 37–40 | Takeaways, Q&A | 22–23 | repo URL |
 
 ## Demo commands (expected output)
 
 Working directory: repo root. `PYTHONPATH` is set by `uv run`.
 
-### Pattern 1 — timeout
+### 1. Explicit Errors: Timeout before vs after
 
 ```bash
 uv run python -m ingest demo --mode before --url https://news.example/timeout
@@ -52,29 +54,36 @@ uv run python -m ingest demo --mode after --url https://news.example/timeout
 retryable: timed out fetching https://news.example/timeout
 ```
 
-Also useful, if there is time:
+### 2. Typestates: Compile-time method gating
 
 ```bash
-uv run python -m ingest demo --mode after --url https://news.example/missing
-uv run python -m ingest demo --mode after --url https://news.example/empty-title
-uv run python -m ingest demo --mode after --url https://news.example/ok
+uv run pyright typecheck/invalid/cannot_finish_pending_job.py
 ```
 
-### Pattern 2 — completed without a result
+```
+error: Cannot access attribute "finish" for class "Pending"
+  Attribute "finish" is unknown
+```
+
+### 3. Compiler Contracts: Swapped IDs & Non-exhaustive Match
 
 ```bash
-uv run python -m ingest jobs --mode before --url https://news.example/missing
+uv run pyright typecheck/invalid/swapped_newtype_arguments.py
 ```
 
-JSON with `"status": "completed"` and `"result": null`.
+```
+error: Argument of type "Url" cannot be assigned to parameter "job_id" of type "JobId"
+```
 
 ```bash
-uv run python -m ingest jobs --mode after --url https://news.example/missing
+uv run pyright typecheck/invalid/non_exhaustive_match.py
 ```
 
-Starts with `Failed`.
+```
+error: Argument of type "Processing" cannot be assigned to parameter "arg" of type "Never"
+```
 
-### Pattern 3 — shared topics
+### 4. Ownership: Leaked shared list before vs after
 
 ```bash
 uv run python -m ingest pipeline --mode before
@@ -88,14 +97,6 @@ uv run python -m ingest pipeline --mode after
 
 First topics include `transportation`. Second topics do not.
 
-### Types (optional, 30 seconds)
-
-```bash
-uv run pyright typecheck/invalid/pending_has_no_article.py
-```
-
-Expect an error: `Pending` has no attribute `article`.
-
 ## If a demo fails
 
 Do not debug live past 20 seconds. The script already describes the output.
@@ -103,6 +104,6 @@ The tests encode the same facts: `tests/test_cli.py`.
 
 ## After the talk
 
-Point people at the README setup block and the four skill folders.
+Point people at the README setup block and the five skill folders.
 The takeaway is not "rewrite your codebase tonight." It is "steal one
 pattern, and put it in a skill so the agent steals it too."

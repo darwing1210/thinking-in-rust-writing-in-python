@@ -1,21 +1,22 @@
 ---
 name: model-valid-states
-description: Use when a Python object uses status strings plus optional fields, and invalid combinations are representable (completed without a result, failed without an error). Replace them with tagged unions so each state carries only the data that state needs.
+description: Use when a Python object uses status strings plus optional fields, and invalid combinations or lifecycle methods are representable. Replace them with typestates and tagged unions so methods only exist in valid states.
 ---
 
-# Model valid states
+# Model valid states & Typestates
 
-If a `status: str` field and two optional fields can describe an impossible
-situation, someone will eventually persist that situation.
+If a `status: str` field and optional fields can describe an impossible
+situation, someone or an AI agent will eventually create that situation.
+Furthermore, if an object exposes methods like `.complete()` or `.retry()`
+before it has even been started, callers will call them.
 
 ## Use this skill when
 
 - You see `status` / `state` / `kind` as a string or enum **plus** several
   `X | None` fields that are only meaningful for some statuses.
+- Methods check `if self.status != "expected": raise InvalidStateError`.
 - Callers write `if job.result is None` after already checking
   `job.status == "completed"`.
-- Magic strings (`"pending"`, `"done"`, `"complete"`, `"COMPLETED"`) have
-  already drifted.
 
 ## Do not use this skill when
 
@@ -23,71 +24,79 @@ situation, someone will eventually persist that situation.
 - You would create a class per JSON key in a throwaway parser.
 - The domain really does have optional data that is independent of state.
 
-Python dataclasses will not stop you from writing a bad union. Pyright will
-flag `job.article` on a `Pending` job **if the object is typed as `Pending`**,
-not if it has been widened to `object`.
+## Pattern 1: Tagged Union of States
 
-## Pattern
-
-Replace:
-
-```python
-@dataclass
-class Job:
-    status: str
-    result: dict | None
-    error: str | None
-```
-
-with one frozen dataclass per state:
+Replace a single blob with one frozen dataclass per state:
 
 ```python
 @dataclass(frozen=True)
 class Pending:
-    job_id: str
-    url: str
+    job_id: JobId
+    url: Url
 
 @dataclass(frozen=True)
 class Processing:
-    job_id: str
-    url: str
+    job_id: JobId
+    url: Url
 
 @dataclass(frozen=True)
 class Completed:
-    job_id: str
+    job_id: JobId
     article: Article
 
 @dataclass(frozen=True)
 class Failed:
-    job_id: str
+    job_id: JobId
     error: IngestError
 
 type Job = Pending | Processing | Completed | Failed
 ```
 
-Transitions return a *new* state. They do not mutate fields in place.
+## Pattern 2: Typestate (Method Gating)
+
+Attach methods **only** to the states where they make sense.
+Transitions return a *new* type:
 
 ```python
-def finish(job: Processing, result: Result[Article, IngestError]) -> Completed | Failed:
-    match result:
-        case Ok(value):
-            return Completed(job_id=job.job_id, article=value)
-        case Err(error):
-            return Failed(job_id=job.job_id, error=error)
+@dataclass(frozen=True)
+class Pending:
+    job_id: JobId
+    url: Url
+
+    def start(self) -> Processing:
+        # Calling .finish() here is a static type error!
+        return Processing(job_id=self.job_id, url=self.url)
+
+@dataclass(frozen=True)
+class Processing:
+    job_id: JobId
+    url: Url
+
+    def finish(self, result: Result[Article, IngestError]) -> Completed | Failed:
+        match result:
+            case Ok(value):
+                return Completed(job_id=self.job_id, article=value)
+            case Err(error):
+                return Failed(job_id=self.job_id, error=error)
 ```
 
-A completed job without an article cannot be constructed. A failed job without
-an error cannot be constructed.
+Now:
+- `pending.finish(...)` **does not compile** (AttributeError in Pyright).
+- `completed.article` always exists.
+- An AI coding agent cannot hallucinate illegal lifecycle transitions because
+  Pyright rejects the code immediately.
 
 ## Review checklist
 
-- Can you construct a completed-without-result object in one line?
-- Do transitions keep stale fields from a previous state?
-- Is `match` exhaustive for the states you actually handle?
-- Are you using this to model *domain* states, not every boolean flag?
+- Can you construct a completed-without-result object?
+- Can you call a transition method on the wrong state?
+- Do transitions return a new object instead of mutating in place?
+- Is Pyright run in CI to enforce the typestate boundaries?
 
 ## In this repo
 
 - Problem: `src/ingest/before/jobs.py`
 - Solution: `src/ingest/after/jobs.py`
-- Invalid example Pyright should catch: `typecheck/invalid/pending_has_no_article.py`
+- Invalid type checks:
+  - `typecheck/invalid/pending_has_no_article.py`
+  - `typecheck/invalid/cannot_finish_pending_job.py`

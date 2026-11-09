@@ -80,8 +80,8 @@
       text-wrap: pretty;
     }
     h1 { font-size: 84px; line-height: 0.98; max-width: 14ch; }
-    h2 { font-size: 54px; line-height: 1.08; max-width: 20ch; }
-    h3 { font-size: 28px; font-family: var(--font-sans); font-weight: 600; letter-spacing: 0; }
+    h2 { font-size: 52px; line-height: 1.08; max-width: 22ch; }
+    h3 { font-size: 26px; font-family: var(--font-sans); font-weight: 600; letter-spacing: 0; }
     .lede {
       font-size: 32px;
       color: var(--ink);
@@ -95,8 +95,8 @@
       line-height: 1.4;
       margin: 8px 0 12px;
     }
-    p, li { font-size: 28px; line-height: 1.35; color: var(--ink); text-wrap: pretty; }
-    .sub { font-size: 28px; color: var(--muted); max-width: 28ch; }
+    p, li { font-size: 26px; line-height: 1.35; color: var(--ink); text-wrap: pretty; }
+    .sub { font-size: 26px; color: var(--muted); max-width: 28ch; }
     .muted { color: var(--muted); }
     ul { margin: 0; padding-left: 1.1em; display: grid; gap: 12px; }
     .row { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; align-items: start; }
@@ -121,9 +121,9 @@
       margin: 0;
       background: var(--code-bg);
       border: 1px solid var(--line);
-      padding: 22px 26px;
+      padding: 20px 24px;
       font-family: var(--font-mono);
-      font-size: 22px;
+      font-size: 20px;
       line-height: 1.45;
       overflow: hidden;
       white-space: pre;
@@ -137,9 +137,9 @@
     pre code { color: inherit; font-size: inherit; }
     .quote {
       font-family: var(--font-display);
-      font-size: 44px;
+      font-size: 42px;
       line-height: 1.22;
-      max-width: 20ch;
+      max-width: 21ch;
       margin: 0;
     }
     .pill {
@@ -150,16 +150,16 @@
       font-size: 14px;
       font-weight: 700;
     }
-    table { border-collapse: collapse; width: 100%; font-size: 24px; }
-    th, td { text-align: left; padding: 12px 16px 12px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+    table { border-collapse: collapse; width: 100%; font-size: 22px; }
+    th, td { text-align: left; padding: 10px 16px 10px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
     th {
       color: var(--rust);
       font-weight: 700;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      font-size: 16px;
+      font-size: 15px;
       width: 5.5rem;
-      padding-top: 16px;
+      padding-top: 14px;
     }
     .bar {
       position: absolute;
@@ -194,8 +194,8 @@
     .notes.show { display: block; }
     .tag-ok { color: var(--ok); }
     .tag-bad { color: var(--bad); }
-    .small { font-size: 20px; color: var(--muted); }
-    .split-list { display: grid; gap: 10px; }
+    .small { font-size: 19px; color: var(--muted); }
+    .split-list { display: grid; gap: 8px; }
     .repo {
       font-family: var(--font-mono);
       font-size: 22px;
@@ -214,6 +214,7 @@
 </head>
 <body>
   <div class="stage" id="stage">
+    <!-- Slide 1 -->
     <section class="slide hero on" data-notes="Pause on the title. Promise: no Rust required. Steal ideas, not syntax. This is the meetup flyer, spoken.">
       <div class="brand">Alamo Python</div>
       <h1>Stealing good ideas from Rust</h1>
@@ -235,35 +236,39 @@
       </div>
     </section>
 
+    <!-- Slide 2 -->
     <section class="slide" data-notes="Hands: who shipped Python an agent wrote part of in six months? Nod. Do not count.">
       <div class="kicker">Who this is for</div>
       <h2>Python people. Not a Rust course.</h2>
       <ul>
-        <li>You write Python at work — APIs, jobs, scripts.</li>
+        <li>You write Python at work — APIs, jobs, pipelines.</li>
         <li>You have returned <code>None</code> and hoped the next person would know why.</li>
         <li>You have watched an AI write code that ran… and still felt weird about it.</li>
       </ul>
     </section>
 
-    <section class="slide" data-notes="Map the 40 minutes. Same toy service throughout: article ingest, four fake URLs, no network.">
+    <!-- Slide 3 -->
+    <section class="slide" data-notes="Map the 40 minutes. 4 high-leverage architectural patterns, then the AI punchline.">
       <div class="kicker">40 minutes</div>
-      <h2>Three habits. Then we teach them to the AI.</h2>
+      <h2>Four deep habits. Then we teach them to AI.</h2>
       <table>
-        <tr><th>4 min</th><td>Why steal from Rust at all</td></tr>
-        <tr><th>8 min</th><td>Name the failure — don’t shrug with <code>None</code></td></tr>
-        <tr><th>9 min</th><td>Don’t let a job be “done” and empty</td></tr>
-        <tr><th>6 min</th><td>Stop surprise edits in shared data</td></tr>
-        <tr><th>9 min</th><td>Write those habits down for your coding agent</td></tr>
-        <tr><th>4 min</th><td>What to steal this week, then questions</td></tr>
+        <tr><th>4 min</th><td>Why borrow from Rust: mechanical design</td></tr>
+        <tr><th>8 min</th><td>Explicit Errors — <code>Result</code> as a value</td></tr>
+        <tr><th>8 min</th><td>Typestates — gating methods by lifecycle state</td></tr>
+        <tr><th>6 min</th><td>Compiler Contracts — <code>assert_never</code> & <code>NewType</code></td></tr>
+        <tr><th>6 min</th><td>The Ownership Law — Aliasing XOR Mutability</td></tr>
+        <tr><th>8 min</th><td>The AI Sandbox — the compiler as the agent's leash</td></tr>
       </table>
     </section>
 
+    <!-- Slide 4 -->
     <section class="slide" data-notes="Read the quote, then paraphrase. Say it: Python will not stop you. Pyright nags. This is design.">
       <div class="kicker">Central message</div>
       <p class="quote">You don’t need to write Rust. You can still steal the good parts. And if AI is writing your Python, you can teach it those parts too.</p>
     </section>
 
-    <section class="slide" data-notes="Forty seconds, then move. Smile. Rust is the teacher, not the religion.">
+    <!-- Slide 5 -->
+    <section class="slide" data-notes="Forty seconds, then move. Smile. Rust is the teacher, not the religion. LLMs copy patterns in front of them.">
       <div class="kicker">Disclaimer</div>
       <h2>These are not “Rust patterns.”</h2>
       <ul>
@@ -274,6 +279,7 @@
       </ul>
     </section>
 
+    <!-- Slide 6 -->
     <section class="slide" data-notes="Let them read the code. Count to four. Three outcomes, two channels. The type dict | None is a lie.">
       <div class="kicker">Pattern 1 · Python problem</div>
       <h2><code>None</code> means two things. An exception means a third.</h2>
@@ -290,6 +296,7 @@
       <p class="small">Missing article and timeout both come back as <code>None</code>. You cannot tell them apart.</p>
     </section>
 
+    <!-- Slide 7 -->
     <section class="slide" data-notes="Four lines of Rust. Do not teach lifetimes. Souvenir: failure has a type, in return position.">
       <div class="kicker">Pattern 1 · Rust inspiration</div>
       <h2>Don’t hide a failure. Hand it back.</h2>
@@ -301,6 +308,7 @@
       </ul>
     </section>
 
+    <!-- Slide 8 -->
     <section class="slide" data-notes="This is the whole framework. Two dataclasses. Named errors. match is the operations team in the source.">
       <div class="kicker">Pattern 1 · Python solution</div>
       <div class="row">
@@ -326,6 +334,7 @@ type Result[T, E] = Ok[T] | Err[E]</pre>
       <p class="small">That’s the whole trick. Two little classes, then <code>match</code>.</p>
     </section>
 
+    <!-- Slide 9 -->
     <section class="slide" data-notes="Run both commands. If demo fails, read the expected lines and move. Optional: missing and empty-title after.">
       <div class="kicker">Pattern 1 · Demo</div>
       <h2>Same timeout. Now you can tell them apart.</h2>
@@ -341,7 +350,8 @@ uv run python -m ingest demo --mode after \
 <span class="tag-ok">retryable: timed out fetching https://news.example/timeout</span></pre>
     </section>
 
-    <section class="slide" data-notes="Boundary functions yes. Bug-as-Result no. Two dataclasses, not a monad library. Pyright is optional; runtime still runs.">
+    <!-- Slide 10 -->
+    <section class="slide" data-notes="Boundary functions yes. Bug-as-Result no. Two dataclasses, not a monad library.">
       <div class="kicker">Pattern 1 · Trade-offs</div>
       <div class="row">
         <div class="stack">
@@ -363,88 +373,129 @@ uv run python -m ingest demo --mode after \
       </div>
     </section>
 
-    <section class="slide" data-notes="Four statuses, two optionals, too many boxes. complete(None) is legal. fail then complete leaves stale error.">
+    <!-- Slide 11 -->
+    <section class="slide" data-notes="Four statuses, two optionals, too many boxes. complete(None) is legal. Methods called out of turn.">
       <div class="kicker">Pattern 2 · Python problem</div>
-      <h2>This job can be “done” and empty.</h2>
+      <h2>The form with extra boxes — and out-of-order methods.</h2>
       <pre>@dataclass
 class Job:
-    job_id: str
-    url: str
     status: str = "pending"
     result: dict | None = None
-    error: str | None = None</pre>
-      <p class="small">Python will let you complete a job with no result. And fail it with no error.</p>
+    error: str | None = None
+
+    def complete(self, result): ...  # Legal to call before start()!
+    def fail(self, error): ...</pre>
+      <p class="small">You can complete a job before starting it. And you can complete it with no result.</p>
     </section>
 
-    <section class="slide" data-notes="Tattoo sentence. Python everyday tools: frozen dataclasses + union + match. No new vocabulary required.">
+    <!-- Slide 12 -->
+    <section class="slide" data-notes="Typestates: methods only exist where valid. Transitions consume old state.">
       <div class="kicker">Pattern 2 · Rust inspiration</div>
-      <h2>If it shouldn’t happen, don’t let the object exist.</h2>
+      <h2>The Typestate pattern: methods only exist when valid.</h2>
       <ul>
-        <li>Pending, running, done, failed — each is its own shape.</li>
-        <li>Done always has the article. Failed always has the reason.</li>
-        <li>No leftover fields from last week’s retry.</li>
+        <li>In Rust, state transitions consume <code>self</code>: <code>fn start(self) -> Processing</code>.</li>
+        <li>You cannot call <code>.finish()</code> on a <code>Pending</code> job. The method does not exist.</li>
+        <li>No runtime checks like <code>if self.status != "running": raise</code>. It fails to compile.</li>
       </ul>
-      <p class="small">You already write <code>int | str</code>. Same idea, for a job.</p>
+      <p class="small">Move lifecycle invariants from 3 AM Sentry alerts to static analysis.</p>
     </section>
 
-    <section class="slide" data-notes="Demo jobs before/after on missing URL. Before: completed + null. After: Failed NotFound. Cut Pyright if behind.">
+    <!-- Slide 13 -->
+    <section class="slide" data-notes="Show Pending.start() and Processing.finish(). Pending has no finish method!">
       <div class="kicker">Pattern 2 · Python solution</div>
       <div class="row">
         <pre>@dataclass(frozen=True)
 class Pending:
-    job_id: str
-    url: str
+    job_id: JobId
+    url: Url
 
-@dataclass(frozen=True)
-class Completed:
-    job_id: str
-    article: Article
+    def start(self) -> Processing:
+        return Processing(
+            self.job_id, self.url
+        )</pre>
+        <pre>@dataclass(frozen=True)
+class Processing:
+    job_id: JobId
+    url: Url
 
-@dataclass(frozen=True)
-class Failed:
-    job_id: str
-    error: IngestError
-
-type Job = Pending | Processing
-         | Completed | Failed</pre>
-        <pre>def finish(job: Processing, result):
-    match result:
-        case Ok(value):
-            return Completed(
-                job_id=job.job_id,
-                article=value,
-            )
-        case Err(error):
-            return Failed(
-                job_id=job.job_id,
-                error=error,
-            )</pre>
+    def finish(self, res) -> Completed | Failed:
+        match res:
+            case Ok(val):
+                return Completed(self.job_id, val)
+            case Err(err):
+                return Failed(self.job_id, err)</pre>
       </div>
+      <p class="small"><code>Pending</code> has no <code>.finish()</code> method. Calling it is a Pyright error.</p>
     </section>
 
-    <section class="slide" data-notes="Lifecycle objects yes. Middle name no. match is not rustc. Keep the union small, tests honest.">
-      <div class="kicker">Pattern 2 · Trade-offs</div>
+    <!-- Slide 14 -->
+    <section class="slide" data-notes="Show Pyright catching cannot_finish_pending_job.py at compile time!">
+      <div class="kicker">Pattern 2 · Demo</div>
+      <h2>Pyright catches lifecycle errors before runtime.</h2>
+      <pre>job = Pending(job_id=JobId("j1"), url=Url("https://news.example/ok"))
+
+# Bug: trying to finish a pending job before starting it!
+job.finish(Err(NotFound(url="https://news.example/ok")))
+
+<span class="tag-bad">error: Cannot access attribute "finish" for class "Pending"
+  Attribute "finish" is unknown</span></pre>
+      <p class="small">An AI agent or coworker cannot call the wrong method. The compiler blocks it.</p>
+    </section>
+
+    <!-- Slide 15 -->
+    <section class="slide" data-notes="Primitive obsession & silent match fallthrough. Swapped strings and unhandled states.">
+      <div class="kicker">Pattern 3 · Python problem</div>
+      <h2>Swapped arguments and silent match fallthrough.</h2>
       <div class="row">
         <div class="stack">
-          <h3>Use it</h3>
-          <ul>
-            <li>Jobs, orders, payments — anything with a life cycle</li>
-            <li>When “you shouldn’t read that field yet”</li>
-          </ul>
+          <p class="pill">1. Swapped string IDs</p>
+          <pre>def fetch(url: str, job_id: str): ...
+
+# Bug: swapped arguments!
+fetch(my_job_id, my_url)</pre>
+          <p class="small">Tests pass because both are <code>str</code>. Production silently corrupts.</p>
         </div>
         <div class="stack">
-          <h3 class="muted">Skip it</h3>
-          <ul>
-            <li>A nickname that really is optional</li>
-            <li>A one-off parser you’ll throw away</li>
-          </ul>
+          <p class="pill">2. Silent match fallthrough</p>
+          <pre>match job:
+    case Pending(): ...
+    case Completed(): ...
+    # Forgot Processing & Failed!</pre>
+          <p class="small">Python does not check exhaustiveness. It silently returns <code>None</code>.</p>
         </div>
       </div>
-      <p class="small">Python still won’t yell like Rust. Keep the list of shapes small.</p>
     </section>
 
-    <section class="slide" data-notes="setdefault aliases SHARED_TOPICS. Weather story tagged transportation. Hands: test passed alone, failed in CI.">
-      <div class="kicker">Pattern 3 · Python problem</div>
+    <!-- Slide 16 -->
+    <section class="slide" data-notes="NewType is zero-cost at runtime. assert_never breaks CI if a union case is missing.">
+      <div class="kicker">Pattern 3 · Rust & Python solution</div>
+      <div class="row">
+        <div class="stack">
+          <h3>Zero-cost <code>NewType</code></h3>
+          <pre>JobId = NewType("JobId", str)
+Url = NewType("Url", str)
+
+def fetch(url: Url, id: JobId): ...
+fetch(my_id, my_url)  # Pyright ERROR!</pre>
+          <p class="small">Zero runtime overhead. 100% compile-time protection.</p>
+        </div>
+        <div class="stack">
+          <h3>Exhaustiveness with <code>assert_never</code></h3>
+          <pre>match job:
+    case Pending(): ...
+    case Processing(): ...
+    case Completed(): ...
+    case Failed(): ...
+    case _ as unreachable:
+        assert_never(unreachable)</pre>
+          <p class="small">Add <code>Cancelled</code> to the union? Pyright breaks until handled!</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 17 -->
+    <section class="slide" data-notes="setdefault aliases SHARED_TOPICS. Weather story tagged transportation. Aliasing XOR Mutability.">
+      <div class="kicker">Pattern 4 · Python problem</div>
       <h2>We tagged the weather story as transportation.</h2>
       <pre>SHARED_TOPICS: list[str] = ["news"]
 
@@ -457,92 +508,99 @@ def enrich(article: dict) -> dict:
       <p class="small">Two articles shared one list. The second one inherited the first one’s tags.</p>
     </section>
 
-    <section class="slide" data-notes="Not teaching borrow checker. If something changes, you should see the assignment. Local list mutation is fine.">
-      <div class="kicker">Pattern 3 · Rust inspiration</div>
-      <h2>Don’t edit the original. Return a new copy.</h2>
+    <!-- Slide 18 -->
+    <section class="slide" data-notes="Rust's Law: Aliasing XOR Mutability. Python's built-in borrow checker in memoryview.">
+      <div class="kicker">Pattern 4 · The Ownership Rule</div>
+      <h2>Aliasing XOR Mutability.</h2>
+      <p class="quote" style="font-size: 34px;">You can have many shared readers, OR one exclusive writer. Never both.</p>
+      <ul>
+        <li>If multiple parts of your program see an object, <strong>do not mutate it in place</strong>.</li>
+        <li>Private mutation inside a function is fine (no alias exists yet).</li>
+        <li>Fun fact: Python has a built-in borrow checker! Try resizing a bytearray while a <code>memoryview</code> borrows it: raises <code>BufferError</code>!</li>
+      </ul>
+    </section>
+
+    <!-- Slide 19 -->
+    <section class="slide" data-notes="Frozen dataclass, tuples, dataclasses.replace. Pipeline before and after demo.">
+      <div class="kicker">Pattern 4 · Python solution & demo</div>
       <pre>@dataclass(frozen=True)
 class Article:
-    ...
-    topics: tuple[str, ...] = ()
+    topics: tuple[str, ...] = ()  # Immutable published collection
 
 def tag_topics(article: Article) -> Article:
-    topics = ["news"]
+    local_tags = ["news"]        # Private local mutation: totally fine!
     if "bike" in article.body.lower():
-        topics.append("transportation")
-    return replace(article, topics=tuple(topics))</pre>
+        local_tags.append("transportation")
+    return replace(article, topics=tuple(local_tags))
+
+uv run python -m ingest pipeline --mode before  <span class="tag-bad"># leaked tags</span>
+uv run python -m ingest pipeline --mode after   <span class="tag-ok"># isolated</span></pre>
     </section>
 
-    <section class="slide" data-notes="Run pipeline before then after. Freeze values that cross a boundary. Do not freeze every int.">
-      <div class="kicker">Pattern 3 · Demo and trade-offs</div>
-      <pre>uv run python -m ingest pipeline --mode before
-<span class="tag-bad">second topics include transportation</span>
-
-uv run python -m ingest pipeline --mode after
-<span class="tag-ok">second topics do not</span></pre>
-      <p class="small">Freeze the values you pass around. A local list inside a function is still fine.</p>
-    </section>
-
-    <section class="slide" data-notes="Prepared demo, not live wifi. Naive review adds TypedDict, logging, Enum, still returns None. Agents complete the pattern in front of them.">
-      <div class="kicker">Agents</div>
-      <h2>The AI copies whatever you already do.</h2>
+    <!-- Slide 20 -->
+    <section class="slide" data-notes="The real punchline: the compiler as the agent's leash. Strict types turn AI into a self-correcting coder.">
+      <div class="kicker">The AI Punchline</div>
+      <h2>The compiler as the agent’s leash.</h2>
       <div class="row">
         <div class="stack">
-          <p class="pill">Ask it to “review this”</p>
+          <p class="pill">Sloppy Python (Dicts & None)</p>
           <ul class="split-list">
-            <li>Add a <code>TypedDict</code></li>
-            <li>Log the timeout</li>
-            <li>Catch <code>Exception</code></li>
-            <li>Status <code>Enum</code></li>
-            <li>Keep returning <code>None</code></li>
+            <li>AI hallucinates invalid states</li>
+            <li>Swaps string arguments</li>
+            <li>Forgets match branches</li>
+            <li>Tests pass; production breaks</li>
           </ul>
         </div>
         <div class="stack">
-          <p class="pill">The bugs are still there</p>
+          <p class="pill">Rust-Inspired Python</p>
           <ul class="split-list">
-            <li>Timeout still looks like a 404</li>
-            <li>Completed still needs no result</li>
-            <li>Shared list still leaks</li>
+            <li>Typestates block invalid methods</li>
+            <li>NewType blocks swapped IDs</li>
+            <li><code>assert_never</code> blocks forgotten cases</li>
+            <li><strong>AI self-corrects against Pyright before PR</strong></li>
           </ul>
         </div>
       </div>
-      <p class="small">That’s a typical AI review: more types, more logs. Same shrugs.</p>
     </section>
 
-    <section class="slide" data-notes="Four SKILL.md files. Read skilled-review summary. Evaluating AI: tests are the floor. Ceiling is whether timeout is a value.">
+    <!-- Slide 21 -->
+    <section class="slide" data-notes="Five SKILL.md files. Write the habit down so the agent follows it.">
       <div class="kicker">Skills</div>
-      <h2>Write the habit down. Then the agent can follow it.</h2>
+      <h2>Write the habits down. Then the agent uses them.</h2>
       <ul>
-        <li><code>skills/explicit-error-handling</code> — name the failure</li>
-        <li><code>skills/model-valid-states</code> — don’t allow empty “done”</li>
-        <li><code>skills/intentional-immutability</code> — don’t share a list</li>
-        <li><code>skills/python-design-review</code> — and don’t gold-plate</li>
+        <li><code>skills/explicit-error-handling</code> — name failures as <code>Ok | Err</code></li>
+        <li><code>skills/model-valid-states</code> — typestates & method gating</li>
+        <li><code>skills/type-driven-contracts</code> — <code>NewType</code> & <code>assert_never</code></li>
+        <li><code>skills/intentional-immutability</code> — Aliasing XOR Mutability</li>
+        <li><code>skills/python-design-review</code> — filter for simplicity</li>
       </ul>
-      <p class="small">A markdown file the agent reads first. That’s the whole trick.</p>
+      <p class="small">A markdown file the agent reads first. Portable across Claude Code, Cursor, Codex.</p>
     </section>
 
-    <section class="slide" data-notes="Six takeaways. Not next quarter — one function this week. You need the pattern that matches the bug you ship.">
+    <!-- Slide 22 -->
+    <section class="slide" data-notes="Five takeaways you can use this week on one function.">
       <div class="kicker">Steal this</div>
-      <h2>Steal one of these this week.</h2>
+      <h2>Five architectural habits for this week.</h2>
       <ul>
-        <li>Notice a <code>None</code> that means two things.</li>
-        <li>Give those failures names, if someone has to choose what to do next.</li>
-        <li>Don’t let a job be “done” with nothing in it.</li>
-        <li>If you change data, return a new copy.</li>
-        <li>Write four lines in a <code>SKILL.md</code> so the AI does it too.</li>
-        <li>Don’t trust “it ran.” Ask if the next person can misuse it.</li>
+        <li><strong>Return failures as values:</strong> Stop returning <code>None</code> for two different problems.</li>
+        <li><strong>Typestates:</strong> Gate methods on state dataclasses so illegal calls don't type-check.</li>
+        <li><strong>Zero-cost IDs:</strong> Wrap raw strings with <code>NewType</code> to stop argument transposition.</li>
+        <li><strong>Compile-time exhaustiveness:</strong> End closed matches with <code>assert_never</code>.</li>
+        <li><strong>Aliasing XOR Mutability:</strong> Private mutation ok; shared mutation forbidden.</li>
       </ul>
     </section>
 
-    <section class="slide" data-notes="Read the quote. Repo name. MIT. No cloud. Rewrite the monolith? No. One boundary function. Four lines in a skill. Questions.">
+    <!-- Slide 23 -->
+    <section class="slide" data-notes="Read the quote. Repo name. MIT. No cloud. Questions.">
       <div class="kicker">Alamo Python</div>
-      <p class="quote">Better Python is not more code. It’s clearer decisions — and teaching the AI to make those with you.</p>
+      <p class="quote">Better Python is not more code. It’s clearer decisions — and giving our AI agents the mechanical guardrails to write safe software.</p>
       <p class="repo">thinking-in-rust-writing-in-python</p>
-      <p class="small">Questions. Should you rewrite the whole app tomorrow? No. Pick one function.</p>
+      <p class="small">Questions. Should you rewrite the whole app tomorrow? No. Pick one boundary function.</p>
     </section>
 
     <div class="bar">
       <span>Alamo Python · Stealing good ideas from Rust</span>
-      <span id="count">1 / 20</span>
+      <span id="count">1 / 23</span>
     </div>
     <div class="progress"><span id="prog"></span></div>
     <div class="notes" id="notes"></div>
