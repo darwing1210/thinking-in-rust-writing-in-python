@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Thinking in Rust, Writing in Python</title>
+  <style>
+    :root {
+      --bg: #12141a;
+      --surface: #191c24;
+      --ink: #efe8dc;
+      --muted: #9aa3b2;
+      --line: #2a3040;
+      --accent: #d4783c;
+      --accent-soft: #e2b48a;
+      --code-bg: #0d0f14;
+      --ok: #8fbf7a;
+      --bad: #d16b6b;
+      --warn: #d4b45a;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+    }
+    body {
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+    .stage {
+      width: min(100vw, calc(100vh * 16 / 9));
+      height: min(100vh, calc(100vw * 9 / 16));
+      position: relative;
+      background: var(--bg);
+      overflow: hidden;
+    }
+    .slide {
+      display: none;
+      position: absolute;
+      inset: 0;
+      padding: 64px 80px 88px;
+      flex-direction: column;
+      justify-content: center;
+      gap: 28px;
+    }
+    .slide.on { display: flex; }
+    .kicker {
+      color: var(--accent);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-size: 18px;
+      font-weight: 650;
+    }
+    h1, h2, h3 { margin: 0; font-weight: 600; letter-spacing: -0.03em; text-wrap: pretty; }
+    h1 { font-size: 72px; line-height: 1.05; max-width: 16ch; }
+    h2 { font-size: 52px; line-height: 1.12; max-width: 22ch; }
+    p, li { font-size: 28px; line-height: 1.35; color: var(--ink); text-wrap: pretty; }
+    .sub { font-size: 28px; color: var(--muted); max-width: 28ch; }
+    .muted { color: var(--muted); }
+    ul { margin: 0; padding-left: 1.1em; display: grid; gap: 12px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; align-items: start; }
+    .stack { display: grid; gap: 18px; }
+    pre {
+      margin: 0;
+      background: var(--code-bg);
+      border: 1px solid var(--line);
+      padding: 22px 26px;
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 22px;
+      line-height: 1.45;
+      overflow: hidden;
+      white-space: pre;
+    }
+    code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+    .quote {
+      font-size: 40px;
+      line-height: 1.25;
+      max-width: 22ch;
+      border-left: 4px solid var(--accent);
+      padding-left: 28px;
+    }
+    .pill {
+      display: inline-block;
+      color: var(--accent-soft);
+      border: 1px solid var(--line);
+      padding: 6px 12px;
+      font-size: 16px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    table { border-collapse: collapse; width: 100%; font-size: 24px; }
+    th, td { text-align: left; padding: 12px 16px 12px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--muted); font-weight: 550; }
+    .bar {
+      position: absolute;
+      left: 80px; right: 80px; bottom: 28px;
+      display: flex; justify-content: space-between; align-items: center;
+      color: var(--muted); font-size: 16px; letter-spacing: 0.04em;
+    }
+    .progress {
+      position: absolute; left: 0; right: 0; bottom: 0; height: 3px;
+      background: var(--line);
+    }
+    .progress > span {
+      display: block; height: 100%; background: var(--accent); width: 0%;
+    }
+    .notes {
+      display: none;
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      max-height: 34%;
+      overflow: auto;
+      background: var(--surface);
+      border-top: 1px solid var(--line);
+      color: var(--accent-soft);
+      font-size: 16px;
+      line-height: 1.45;
+      padding: 16px 80px 48px;
+      white-space: pre-wrap;
+    }
+    .notes.show { display: block; }
+    .tag-ok { color: var(--ok); }
+    .tag-bad { color: var(--bad); }
+    .small { font-size: 22px; color: var(--muted); }
+    .split-list { display: grid; gap: 10px; }
+    @media print {
+      body { display: block; background: #fff; }
+      .stage { width: 11in; height: 6.1875in; page-break-after: always; }
+      .slide { display: flex !important; position: relative; }
+      .bar, .progress, .notes { display: none !important; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage" id="stage">
+    <section class="slide on" data-notes="Pause on the title. Promise: no Rust required. Steal ideas, not syntax.">
+      <div class="kicker">PySanAntonio</div>
+      <h1>Thinking in Rust, Writing in Python</h1>
+      <p class="sub">Safer Python design patterns in the age of AI coding agents.</p>
+    </section>
+
+    <section class="slide" data-notes="Hands: who shipped Python an agent wrote part of in six months? Nod. Do not count.">
+      <div class="kicker">Audience</div>
+      <h2>Python people. Not a Rust course.</h2>
+      <ul>
+        <li>You write services, jobs, handlers.</li>
+        <li>You have returned <code>None</code> and hoped.</li>
+        <li>You have watched an agent produce code that ran, and still felt nervous.</li>
+      </ul>
+    </section>
+
+    <section class="slide" data-notes="Map the 40 minutes. Same toy service throughout: article ingest, four fake URLs, no network.">
+      <div class="kicker">40 minutes</div>
+      <h2>Three patterns. One agent habit.</h2>
+      <table>
+        <tr><th>4 min</th><td>Why borrow from Rust at all</td></tr>
+        <tr><th>8 min</th><td>Explicit errors — <code>Result</code> as a value</td></tr>
+        <tr><th>9 min</th><td>Valid states — illegal combos unconstructable</td></tr>
+        <tr><th>6 min</th><td>Intentional immutability</td></tr>
+        <tr><th>9 min</th><td>Skills that teach agents those defaults</td></tr>
+        <tr><th>4 min</th><td>Takeaways and questions</td></tr>
+      </table>
+    </section>
+
+    <section class="slide" data-notes="Read the quote, then paraphrase. Say it: Python will not stop you. Pyright nags. This is design.">
+      <div class="kicker">Central message</div>
+      <p class="quote">You don’t need to write Rust to think like a Rust developer. And when AI writes your Python, you can teach it to apply those same principles.</p>
+    </section>
+
+    <section class="slide" data-notes="Let them read the code. Count to four. Three outcomes, two channels. The type dict | None is a lie.">
+      <div class="kicker">Pattern 1 · Python problem</div>
+      <h2><code>None</code> means two things. An exception means a third.</h2>
+      <pre>def ingest(url: str) -> dict | None:
+    try:
+        raw = fetch_raw(url)
+    except SourceTimeout:
+        return None
+    if raw is None:
+        return None
+    if not article["title"]:
+        raise ValueError("title is required")
+    return article</pre>
+      <p class="small">src/ingest/before/errors.py — missing and timeout are indistinguishable.</p>
+    </section>
+
+    <section class="slide" data-notes="Four lines of Rust. Do not teach lifetimes. Souvenir: failure has a type, in return position.">
+      <div class="kicker">Pattern 1 · Rust inspiration</div>
+      <h2>An expected failure is a value.</h2>
+      <pre>fn ingest(url: &str) -> Result<Article, IngestError> { ... }</pre>
+      <ul>
+        <li><code>Ok(article)</code> or <code>Err(error)</code> — not a missing object.</li>
+        <li>Callers handle it in the return position.</li>
+        <li>Rust forces that. Python will not. We can still put the failure there.</li>
+      </ul>
+    </section>
+
+    <section class="slide" data-notes="This is the whole framework. Two dataclasses. Named errors. match is the operations team in the source.">
+      <div class="kicker">Pattern 1 · Python solution</div>
+      <div class="row">
+        <pre>@dataclass(frozen=True)
+class Ok[T]:
+    value: T
+
+@dataclass(frozen=True)
+class Err[E]:
+    error: E
+
+type Result[T, E] = Ok[T] | Err[E]</pre>
+        <pre>match ingest(url):
+    case Ok(article):
+        save(article)
+    case Err(NotFound()):
+        record_miss()
+    case Err(ValidationFailed(f)):
+        record_invalid(f)
+    case Err(Retryable()):
+        schedule_retry()</pre>
+      </div>
+      <p class="small">src/ingest/after/result.py · after/errors.py · after/ingest.py</p>
+    </section>
+
+    <section class="slide" data-notes="Run both commands. If demo fails, read the expected lines and move. Optional: missing and empty-title after.">
+      <div class="kicker">Pattern 1 · Demo</div>
+      <h2>Same timeout. Different contract.</h2>
+      <pre>uv run python -m ingest demo --mode before \
+  --url https://news.example/timeout
+
+<span class="tag-bad">returned: None</span>
+note: None means missing OR timeout.
+
+uv run python -m ingest demo --mode after \
+  --url https://news.example/timeout
+
+<span class="tag-ok">retryable: timed out fetching https://news.example/timeout</span></pre>
+    </section>
+
+    <section class="slide" data-notes="Boundary functions yes. Bug-as-Result no. Two dataclasses, not a monad library. Pyright is optional; runtime still runs.">
+      <div class="kicker">Pattern 1 · Trade-offs</div>
+      <div class="row">
+        <div class="stack">
+          <h3>Use it</h3>
+          <ul>
+            <li>More than one expected failure</li>
+            <li>Caller must choose: retry, skip, dead-letter</li>
+            <li>Boundary: HTTP, vendor, queue</li>
+          </ul>
+        </div>
+        <div class="stack">
+          <h3 class="muted">Skip it</h3>
+          <ul>
+            <li>The failure is a bug — raise</li>
+            <li>House style is one exception at the edge</li>
+            <li>A script you will delete Friday</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-notes="Four statuses, two optionals, too many boxes. complete(None) is legal. fail then complete leaves stale error.">
+      <div class="kicker">Pattern 2 · Python problem</div>
+      <h2>A status string plus optionals can represent nonsense.</h2>
+      <pre>@dataclass
+class Job:
+    job_id: str
+    url: str
+    status: str = "pending"
+    result: dict | None = None
+    error: str | None = None</pre>
+      <p class="small">Legal: completed with no result. Failed with no error. Completed <em>and</em> a leftover error.</p>
+    </section>
+
+    <section class="slide" data-notes="Tattoo sentence. Python everyday tools: frozen dataclasses + union + match. No new vocabulary required.">
+      <div class="kicker">Pattern 2 · Rust inspiration</div>
+      <h2>Make invalid states hard to represent.</h2>
+      <ul>
+        <li>One variant per state.</li>
+        <li>Each variant holds only the data that state needs.</li>
+        <li>No <code>result: Optional</code> hanging off the whole object.</li>
+      </ul>
+      <p class="small">In Python: tagged union. You already know <code>int | str</code>.</p>
+    </section>
+
+    <section class="slide" data-notes="Demo jobs before/after on missing URL. Before: completed + null. After: Failed NotFound. Cut Pyright if behind.">
+      <div class="kicker">Pattern 2 · Python solution</div>
+      <div class="row">
+        <pre>@dataclass(frozen=True)
+class Pending:
+    job_id: str
+    url: str
+
+@dataclass(frozen=True)
+class Completed:
+    job_id: str
+    article: Article
+
+@dataclass(frozen=True)
+class Failed:
+    job_id: str
+    error: IngestError
+
+type Job = Pending | Processing
+         | Completed | Failed</pre>
+        <pre>def finish(job: Processing, result):
+    match result:
+        case Ok(value):
+            return Completed(
+                job_id=job.job_id,
+                article=value,
+            )
+        case Err(error):
+            return Failed(
+                job_id=job.job_id,
+                error=error,
+            )</pre>
+      </div>
+    </section>
+
+    <section class="slide" data-notes="Lifecycle objects yes. Middle name no. match is not rustc. Keep the union small, tests honest.">
+      <div class="kicker">Pattern 2 · Trade-offs</div>
+      <div class="row">
+        <div class="stack">
+          <h3>Use it</h3>
+          <ul>
+            <li>Jobs, orders, payments, connections</li>
+            <li>You must not read field X yet</li>
+          </ul>
+        </div>
+        <div class="stack">
+          <h3 class="muted">Skip it</h3>
+          <ul>
+            <li>Optional really means optional</li>
+            <li>A class per JSON key in a one-off parser</li>
+          </ul>
+        </div>
+      </div>
+      <p class="small">Python <code>match</code> is not checked like Rust <code>match</code>. Pyright plus a small union is the honest version.</p>
+    </section>
+
+    <section class="slide" data-notes="setdefault aliases SHARED_TOPICS. Weather story tagged transportation. Hands: test passed alone, failed in CI.">
+      <div class="kicker">Pattern 3 · Python problem</div>
+      <h2>In-place enrichment plus a shared list.</h2>
+      <pre>SHARED_TOPICS: list[str] = ["news"]
+
+def enrich(article: dict) -> dict:
+    topics = article.setdefault("topics", SHARED_TOPICS)
+    if "bike" in body:
+        topics.append("transportation")
+    topics.append("ingested")
+    return article</pre>
+      <p class="small">Article two inherits article one’s tags. src/ingest/before/pipeline.py</p>
+    </section>
+
+    <section class="slide" data-notes="Not teaching borrow checker. If something changes, you should see the assignment. Local list mutation is fine.">
+      <div class="kicker">Pattern 3 · Rust inspiration</div>
+      <h2>Immutable by default. Mutation you can point at.</h2>
+      <pre>@dataclass(frozen=True)
+class Article:
+    ...
+    topics: tuple[str, ...] = ()
+
+def tag_topics(article: Article) -> Article:
+    topics = ["news"]
+    if "bike" in article.body.lower():
+        topics.append("transportation")
+    return replace(article, topics=tuple(topics))</pre>
+    </section>
+
+    <section class="slide" data-notes="Run pipeline before then after. Freeze values that cross a boundary. Do not freeze every int.">
+      <div class="kicker">Pattern 3 · Demo and trade-offs</div>
+      <pre>uv run python -m ingest pipeline --mode before
+<span class="tag-bad">second topics include transportation</span>
+
+uv run python -m ingest pipeline --mode after
+<span class="tag-ok">second topics do not</span></pre>
+      <p class="small">Freeze entities and pipeline values. Leave local accumulators as lists. <code>frozen=True</code> is a speed bump, not rustc.</p>
+    </section>
+
+    <section class="slide" data-notes="Prepared demo, not live wifi. Naive review adds TypedDict, logging, Enum, still returns None. Agents complete the pattern in front of them.">
+      <div class="kicker">Agents</div>
+      <h2>They copy the pattern in the file.</h2>
+      <div class="row">
+        <div class="stack">
+          <p class="pill">Without skills</p>
+          <ul class="split-list">
+            <li>Add a <code>TypedDict</code></li>
+            <li>Log the timeout</li>
+            <li>Catch <code>Exception</code></li>
+            <li>Status <code>Enum</code></li>
+            <li>Keep returning <code>None</code></li>
+          </ul>
+        </div>
+        <div class="stack">
+          <p class="pill">The bugs remain</p>
+          <ul class="split-list">
+            <li>Timeout still looks like a 404</li>
+            <li>Completed still needs no result</li>
+            <li>Shared list still leaks</li>
+          </ul>
+        </div>
+      </div>
+      <p class="small">examples/agent-demo/naive-review.md · naive-refactor.py</p>
+    </section>
+
+    <section class="slide" data-notes="Four SKILL.md files. Read skilled-review summary. Evaluating AI: tests are the floor. Ceiling is whether timeout is a value.">
+      <div class="kicker">Skills</div>
+      <h2>Write the default down. Then the agent can use it.</h2>
+      <ul>
+        <li><code>skills/explicit-error-handling</code></li>
+        <li><code>skills/model-valid-states</code></li>
+        <li><code>skills/intentional-immutability</code></li>
+        <li><code>skills/python-design-review</code> — the do-not-gold-plate filter</li>
+      </ul>
+      <p class="small">Portable SKILL.md. prompts/01 vs 02. After-code: src/ingest/after/. pytest, ruff, pyright.</p>
+    </section>
+
+    <section class="slide" data-notes="Six takeaways. Not next quarter — one function this week. You need the pattern that matches the bug you ship.">
+      <div class="kicker">Steal this</div>
+      <h2>Six things, starting with one function.</h2>
+      <ul>
+        <li>Spot a <code>None</code> that means two things.</li>
+        <li>Put expected failures in the return type when callers choose.</li>
+        <li>Replace status-plus-optionals with a union of dataclasses.</li>
+        <li>Make mutation obvious: <code>replace</code>, tuples, new objects.</li>
+        <li>Write one <code>SKILL.md</code>.</li>
+        <li>Judge AI output on maintainability, not on “it ran.”</li>
+      </ul>
+    </section>
+
+    <section class="slide" data-notes="Read the quote. Repo name. MIT. No cloud. Rewrite the monolith? No. One boundary function. Four lines in a skill. Questions.">
+      <div class="kicker">Close</div>
+      <p class="quote">Better Python isn’t more code, more abstractions, or another language. It’s better design decisions — and teaching our agents to make those decisions with us.</p>
+      <p>thinking-in-rust-writing-in-python</p>
+      <p class="small">Questions. If the question is “rewrite the monolith tomorrow,” the answer is no.</p>
+    </section>
+
+    <div class="bar">
+      <span>Thinking in Rust, Writing in Python</span>
+      <span id="count">1 / 20</span>
+    </div>
+    <div class="progress"><span id="prog"></span></div>
+    <div class="notes" id="notes"></div>
+  </div>
+  <script>
+    const slides = [...document.querySelectorAll(".slide")];
+    const notesEl = document.getElementById("notes");
+    const countEl = document.getElementById("count");
+    const progEl = document.getElementById("prog");
+    const KEY = "tirwip-slide";
+    let i = 0;
+    let notesOn = false;
+
+    function show(n, persist) {
+      i = Math.max(0, Math.min(slides.length - 1, n));
+      slides.forEach((s, idx) => s.classList.toggle("on", idx === i));
+      countEl.textContent = (i + 1) + " / " + slides.length;
+      progEl.style.width = ((i + 1) / slides.length * 100) + "%";
+      notesEl.textContent = slides[i].dataset.notes || "";
+      if (persist !== false) {
+        localStorage.setItem(KEY, String(i));
+        history.replaceState(null, "", "#" + (i + 1));
+      }
+    }
+
+    function start() {
+      const hash = parseInt(location.hash.slice(1), 10);
+      const saved = parseInt(localStorage.getItem(KEY) || "", 10);
+      if (hash >= 1 && hash <= slides.length) show(hash - 1, false);
+      else if (saved >= 0 && saved < slides.length) show(saved, false);
+      else show(0, false);
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+        e.preventDefault(); show(i + 1);
+      } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+        e.preventDefault(); show(i - 1);
+      } else if (e.key === "Home") {
+        show(0);
+      } else if (e.key === "End") {
+        show(slides.length - 1);
+      } else if (e.key === "n" || e.key === "N" || e.key === "s" || e.key === "S") {
+        notesOn = !notesOn;
+        notesEl.classList.toggle("show", notesOn);
+      } else if (e.key === "f" || e.key === "F") {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+      }
+    });
+
+    start();
+  </script>
+</body>
+</html>

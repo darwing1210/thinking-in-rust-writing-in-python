@@ -1,205 +1,158 @@
-# Speaker script — Thinking in Rust, Writing in Python
+# Speaker script — Stealing good ideas from Rust
 
-**Event:** PySanAntonio
+**Event:** Alamo Python, Geekdom, November 16
 **Length:** ~40 minutes
-**Deck:** `slides.html` (20 slides)
+**Deck:** `slides.html` (21 slides)
 **Repo root:** one directory up from this file
 
-How to use this: the spoken text is in roman. Stage directions, timing, and
-demo cues are in *italics*. Do not read the italics. If you run long, cut
-the sentences marked **[cut]**. Target pace is conversational, about 130
-words per minute, with pauses on code slides.
+Spoken text is in roman. Stage directions are in *italics*. Do not read
+the italics. Cut anything marked **[cut]** if you run long. Talk like you
+are explaining this to a coworker at the whiteboard — not like a paper.
 
 ---
 
-## 0:00–4:00 — Introduction
-### Slides 1–4
+## 0:00–5:00 — Introduction
+### Slides 1–5
 
 ### Slide 1 — Title
-*Lights, title slide. Stand still for one breath.*
+*Lights. One breath.*
 
-Good evening. The talk is called **Thinking in Rust, Writing in Python**.
-The subtitle is the part I actually care about: **safer Python design
-patterns in the age of AI coding agents**.
+Good evening. The flyer says **Stealing good ideas from Rust**. Under that:
+**Python patterns for reliability**.
 
-I am going to make you a promise up front. You do not need to know Rust.
-You do not need to install Rust. You will see maybe four lines of Rust the
-entire night, and if you forget them on the way to the parking lot, you
-still got the talk.
+Promise up front: you do not need to know Rust. You will see about four
+lines of it. If you forget those on the way to the garage, you still got
+the talk.
 
-We are going to steal *ideas*, not syntax.
+We are stealing *ideas*. We keep writing Python.
 
 ### Slide 2 — Who this is for
 
-If you write Python services — ingestion jobs, workers, HTTP handlers —
-this is for you. If you have ever returned `None` and hoped the caller
-would know what it meant, this is for you. If you have pasted a function
-into ChatGPT or Claude or Codex and gotten back something that *ran* and
-still made you nervous, this is definitely for you.
+This is for people who write Python at work. APIs, jobs, scripts.
 
-*Audience ping.* Quick show of hands: who has shipped Python that an AI
-agent wrote at least part of, in the last six months?
+It is also for anyone who has returned `None` and hoped the next person
+would know why.
 
-*Look around. Nod. Do not count.*
+And it is for anyone who pasted a function into ChatGPT, got code that
+ran, and still felt weird about it.
 
-Yeah. That is the room.
+*Hands.* Who here has shipped Python that an AI wrote at least part of,
+in the last six months?
 
-### Slide 3 — What we will do in 40 minutes
+*Nod. Do not count.*
 
-Here is the map. Three patterns, one agent section, then questions.
+Yeah. That is this room.
 
-1. Explicit errors — Rust's `Result`, in Python.
-2. Valid states — making illegal combinations unconstructable.
-3. Intentional immutability — mutation you can see.
-4. How to pack those into agent skills so the machine does not "helpfully"
-   put the bugs back.
+### Slide 3 — Forty minutes
 
-Each pattern uses the same toy service: an **article ingestion** pipeline.
-Fetch a story by URL, validate it, enrich it, track a background job. No
-network. Four fake URLs. You can run every demo from the repo after this
-with `uv run python -m ingest`.
+Three habits. Then we teach them to the AI. Then questions.
 
-### Slide 4 — The sentence on the tin
+1. Name the failure. Don’t shrug with `None`.
+2. Don’t let a job be “done” and empty.
+3. Stop surprise edits when two functions share a list.
+4. Write those habits down so the coding agent copies *those*, not the bugs.
 
-*Read it, then paraphrase. Do not rush.*
+Same tiny app the whole night: we fetch an article, check it, tag it, and
+track a job. No network. Four fake URLs. After the meetup you can run every
+demo with `uv run python -m ingest`.
 
-You don't need to write Rust to think like a Rust developer. And when AI
-writes your Python, you can teach it to apply those same principles.
+### Slide 4 — The point
 
-That second sentence is why this is not a 2018 types talk with extra
-slides. Agents copy the patterns they can see. If the pattern in the file
-is `return None`, you will get more `return None`. If the pattern is a
-tagged error, you will get tagged errors — *if you bother to write that
-down as a skill*.
+*Read it. Then say it again in your own words.*
 
-One more honesty check, because I will say it three times tonight: **Python
-is not going to stop you.** Pyright will nag you. Frozen dataclasses will
-slow you down. `match` will look exhaustive until you add a new variant and
-forget a branch. None of that is `rustc`. We are buying clarity and a
-better default for the next author, who may not be human.
+You don’t need to write Rust. You can still steal the good parts. And if
+AI is writing your Python, you can teach it those parts too.
+
+Why the second sentence matters: the AI copies whatever is already in the
+file. If the file says `return None`, you get more `return None`. If the
+file names the failure, you get named failures — if you bother to write
+that down.
+
+Honesty, three times tonight: **Python will not stop you.** A type checker
+can nag. Frozen objects slow you down. None of that is Rust’s compiler.
+We are making the next person less likely to mess it up. That next person
+might be an AI.
+
+### Slide 5 — Disclaimer
+
+*Forty seconds. Smile. Then move.*
+
+Quick disclaimer, because the flyer has a crab on it.
+
+These are not “Rust patterns.” They’re old design habits. Name the
+failure. Don’t let a job be done and empty. Don’t share a list and then
+act surprised. Python can do that. So can Go, TypeScript, Java, whatever
+you already write.
+
+Rust just nags you about them. That’s why it’s a useful teacher tonight.
+Nobody here is being asked to rewrite their app.
+
+One more reason this matters: AI copies the project in front of it. If
+the repo has clear habits, the model writes clearer code. If the repo
+shrugs, the model shrugs too. The patterns help you. They also help the
+model.
 
 ---
 
-## 4:00–12:00 — Explicit errors
-### Slides 5–9
-*If you have only one demo that works, it is this one.*
+## 5:00–12:00 — Name the failure
+### Slides 6–10
+*If only one demo works, it is this one.*
 
-### Slide 5 — The Python problem
+### Slide 6 — The shrug
 
-Let me start with a function you have written.
+You have written this function.
 
-*Do not click yet. Talk to the room.*
+It fetches an article. Sometimes the article is gone. Sometimes the other
+side times out. Sometimes the title is blank.
 
-An ingest function. It hits a catalog. Sometimes the article is not there.
-Sometimes the upstream times out. Sometimes the payload has a blank title.
-You would like the caller to retry the timeout, record the miss, and send
-the blank title to a dead-letter queue.
+You want three different next steps: retry the timeout, record the miss,
+send the blank title somewhere to die.
 
-Here is the version in `src/ingest/before/errors.py`.
+Here is the version most of us ship.
 
-*Click. Let them read. Count to four.*
+*Let them read. Count to four.*
 
-```python
-def ingest(url: str) -> dict | None:
-    try:
-        raw = fetch_raw(url)
-    except SourceTimeout:
-        return None
-    if raw is None:
-        return None
-    ...
-    if not article["title"]:
-        raise ValueError("title is required")
-    return article
-```
+Missing and timeout both come back as `None`. Blank title raises. The
+signature says “dict or None.” That is a shrug. The next function cannot
+tell a 404 from a blip.
 
-Three outcomes, two channels. Missing and timeout are both `None`.
-Validation is an exception. The type says `dict | None`. That type is a
-lie about the domain.
+*Hands, optional.* Who has spent twenty minutes asking “was it gone, or
+did the vendor hiccup?”
 
-*Audience ping.* Who has paged on a `None` and then spent twenty minutes
-asking "was it gone, or did the vendor hiccup?"
+### Slide 7 — What Rust does
 
-*Pause.* That is not a typing problem. That is a contract problem.
+Rust’s idea, in English: **don’t hide a failure. Hand it back.**
 
-### Slide 6 — Rust inspiration, four lines
+Not a crash. Not a missing object. A value the next line has to look at.
 
-Rust's move, in plain language: **an expected failure is a value.**
+That type is called `Result`. It is either `Ok` with the article, or `Err`
+with a reason.
 
-Not a traceback. Not a missing object. A value the caller has to look at.
+*Four lines. Do not teach the rest of Rust.*
 
-The type is `Result<T, E>`. It is either `Ok` with a `T`, or `Err` with an
-`E`. If you forget to handle it, the compiler yells.
+Rust makes you handle it. Python will not. We can still hand the failure
+back.
 
-*Click the four lines. Do not teach lifetimes.*
+### Slide 8 — Two little classes
 
-```rust
-fn ingest(url: &str) -> Result<Article, IngestError> { ... }
-```
+This is the entire “framework.” Two frozen classes and a nickname.
 
-That is the whole souvenir. Forget `mut`, forget the borrow checker.
-Remember: **the failure has a type, and it comes back in the return
-position.**
+`Ok` means it worked. `Err` means it didn’t. Then give the failures names:
+not found, bad fields, try again later.
 
-Python cannot force you to handle it. We can still put the failure in the
-return position.
+The next function uses `match` — the same `match` Python already has:
 
-### Slide 7 — Python `Ok` and `Err`
+- it worked → save
+- not found → record a miss
+- bad fields → record invalid
+- try again → schedule a retry
 
-This is the entire "framework" in the repo. Two frozen dataclasses and a
-type alias. `src/ingest/after/result.py`.
+You can hear the on-call rotation in that. Retry is not a comment. It is
+a branch.
 
-```python
-@dataclass(frozen=True)
-class Ok[T]:
-    value: T
+### Slide 9 — Demo
 
-@dataclass(frozen=True)
-class Err[E]:
-    error: E
-
-type Result[T, E] = Ok[T] | Err[E]
-```
-
-Then the errors get names.
-
-```python
-@dataclass(frozen=True)
-class NotFound:
-    url: str
-
-@dataclass(frozen=True)
-class ValidationFailed:
-    fields: tuple[str, ...]
-
-@dataclass(frozen=True)
-class Retryable:
-    reason: str
-```
-
-`ingest` now returns
-`Result[Article, NotFound | ValidationFailed | Retryable]`.
-
-And the caller, in 3.10+ `match`:
-
-```python
-match ingest(url):
-    case Ok(article):
-        save(article)
-    case Err(NotFound()):
-        record_miss()
-    case Err(ValidationFailed(fields)):
-        record_invalid(fields)
-    case Err(Retryable()):
-        schedule_retry()
-```
-
-Read that out loud. You can hear the operations team in it. Retry is not a
-comment. It is a branch.
-
-### Slide 8 — Demo: timeout before vs after
-
-*Terminal. Repo root. Do not narrate typing.*
+*Terminal. Do not narrate typing.*
 
 Before:
 
@@ -207,12 +160,7 @@ Before:
 uv run python -m ingest demo --mode before --url https://news.example/timeout
 ```
 
-*Expected:*
-
-```
-returned: None
-note: None means missing OR timeout. The caller cannot tell.
-```
+You should see `None`, and a note that None means missing *or* timeout.
 
 After:
 
@@ -220,137 +168,66 @@ After:
 uv run python -m ingest demo --mode after --url https://news.example/timeout
 ```
 
-*Expected:*
+You should see `retryable:`.
 
-```
-retryable: timed out fetching https://news.example/timeout
-```
+Same catalog. Same timeout. Now you can tell them apart.
 
-Same catalog. Same timeout. Different contract.
+**[cut]** If you have thirty seconds, run missing and empty-title on
+`--mode after` so they see `not_found:` and `validation_failed:`.
 
-**[cut if behind]** If you have thirty seconds, run missing and empty-title
-on `--mode after` so they see `not_found:` and `validation_failed:`.
+### Slide 10 — When not to bother
 
-The tests in `tests/test_before_errors.py` encode the bug on purpose:
-`test_missing_and_timeout_are_indistinguishable`. I want you to keep tests
-like that when you teach. A green suite that cannot tell 404 from timeout
-is how the bug survives code review.
+Use this when “it failed” is not enough. When someone has to retry, skip,
+or give up. When you talk to the network.
 
-### Slide 9 — Trade-offs
+Skip it when you actually have a bug — just raise. Skip it if the team
+already has one clear exception style. Skip it for a script you will
+delete on Friday.
 
-When this is worth it:
+**[cut]** Please do not add a Result library. Two classes is enough.
 
-- More than one expected failure.
-- Callers have to *choose* (retry, skip, dead-letter).
-- The function is on a boundary: HTTP, disk, vendor, queue.
-
-When it is not:
-
-- The failure is a bug. Raise. Do not Result-wrap `KeyError` you caused.
-- One exception type is already the house style and everyone catches it at
-  the edge.
-- A 40-line script you will delete on Friday.
-
-**[cut]** A Result library, `.and_then()` chains, custom monad syntax —
-that is how this pattern gets a bad reputation in Python. Two dataclasses
-is enough.
-
-Python limitation, said slowly: if you write `ingest(url).value` without
-matching, Pyright *might* complain, and the interpreter *will still run
-until it blows up*. This is design, plus optional static analysis. It is
-not memory safety.
+And Python still will not stop you. If you grab `.value` without looking,
+the type checker *might* complain, and the program *will still run* until
+it blows up. This is a habit, not a lock.
 
 ---
 
-## 12:00–21:00 — Valid states
-### Slides 10–13
+## 12:00–21:00 — Don’t let “done” be empty
+### Slides 11–14
 
-### Slide 10 — Optional fields as a bug farm
+### Slide 11 — The form with extra boxes
 
-Second function you have written: a job record.
+Second function you have written: a job.
 
-```python
-@dataclass
-class Job:
-    job_id: str
-    url: str
-    status: str = "pending"
-    result: dict | None = None
-    error: str | None = None
-```
+Status is a string. Result might be there. Error might be there.
 
-Four statuses, two optional blobs. How many combinations exist? Status has
-at least four values; result is present or not; error is present or not.
-That is a lot of boxes. The domain only wanted four.
+That is a form with too many blank boxes. You can tick “completed” and
+leave the result empty. You can tick “failed” and leave the error empty.
+You can fail, then complete, and the old error is still sitting there.
 
-The illegal ones show up in production as:
+Python will let you. Production will store it.
 
-- `status="completed"` and `result is None`
-- `status="failed"` and `error is None`
-- `status="completed"` *and* a leftover `error` from the last retry
+*Hands, optional.* Who has written `if job.status == "completed" and job.result:`
+and hated the `and job.result` part?
 
-`src/ingest/before/jobs.py` will happily do all three. `complete(None)` is
-a legal call. `fail("boom")` then `complete(article)` leaves `error="boom"`
-on a completed job.
+That extra check is you not trusting your own object.
 
-*Audience ping.* Who has written `if job.status == "completed" and job.result:`
-and hated themselves?
+### Slide 12 — Rust’s sentence
 
-That `and job.result` is the type system leaking into an `if`.
+Rust people repeat this until it is a tattoo: **if it shouldn’t happen,
+don’t let the object exist.**
 
-### Slide 11 — Make invalid states hard to represent
+Pending is one shape. Running is another. Done always carries the article.
+Failed always carries the reason.
 
-Rust people repeat this sentence until it is a tattoo: **make invalid
-states hard to represent.**
+You already write `int | str`. Same idea, for a job.
 
-In Rust that is often an enum. One variant per state. Each variant holds
-only the data that state needs. There is no `result: Option` hanging off
-the whole job.
+### Slide 13 — Four shapes
 
-Python's closest everyday tool is: frozen dataclasses plus a union plus
-`match`. Algebraic data types without the vocabulary.
+A completed job without an article is not a missing field. You cannot
+build it. You have to pass an `Article`.
 
-You already know the pieces. `int | str` is a union. A dataclass is a
-product of fields. Put them together and you get "this *or* that, and if
-it is this, these fields exist."
-
-### Slide 12 — Jobs as a tagged union
-
-`src/ingest/after/jobs.py`:
-
-```python
-@dataclass(frozen=True)
-class Pending:
-    job_id: str
-    url: str
-
-@dataclass(frozen=True)
-class Completed:
-    job_id: str
-    article: Article
-
-@dataclass(frozen=True)
-class Failed:
-    job_id: str
-    error: IngestError
-
-type Job = Pending | Processing | Completed | Failed
-```
-
-A completed job without an article is not a missing field. It is a call
-that does not type-check, and a constructor you cannot write without
-passing an `Article`.
-
-Transitions return a new object. They do not flip a string:
-
-```python
-def finish(job: Processing, result: Result[Article, IngestError]) -> Completed | Failed:
-    match result:
-        case Ok(value):
-            return Completed(job_id=job.job_id, article=value)
-        case Err(error):
-            return Failed(job_id=job.job_id, error=error)
-```
+And we don’t flip a string on the same object. We return a *new* shape.
 
 *Demo.*
 
@@ -358,287 +235,210 @@ def finish(job: Processing, result: Result[Article, IngestError]) -> Completed |
 uv run python -m ingest jobs --mode before --url https://news.example/missing
 ```
 
-You should see `"status": "completed"` and `"result": null`. The miss was
-turned into a successful empty job. That is a paging story.
+Status `"completed"`, result `null`. The miss became a successful empty
+job. That is a paging story.
 
 ```bash
 uv run python -m ingest jobs --mode after --url https://news.example/missing
 ```
 
-`Failed` with a `NotFound`. The state and the error arrived together.
+`Failed`, with `NotFound`. The state and the reason arrived together.
 
-**[cut]** Optional Pyright demo:
+**[cut]** Optional type-check:
 
 ```bash
 uv run pyright --project typecheck/invalid
 ```
 
-`Pending` has no attribute `article`. That is the whole point. The file is
-in `typecheck/invalid/` so the default `pyright` run on the repo stays
-green. Teaching repos should show both.
+Pending has no `.article`. That is the point.
 
-### Slide 13 — Trade-offs
+### Slide 14 — When not to bother
 
-Worth it when the object is a lifecycle: jobs, orders, payments,
-connections, anything with "you may not read field X yet."
+Use this for jobs, orders, payments — anything with a life cycle. Anything
+where “you shouldn’t read that field yet.”
 
-Not worth it when optional really means optional — a middle name, a
-nickname, a nullable column that is independent of state.
+Skip it for a nickname that really is optional. Skip it for a one-off
+parser you will throw away.
 
-Also not worth it as a gold-plating exercise: a class per JSON key in a
-one-off parser.
-
-Exhaustiveness: `match` in Python is not checked the way Rust `match` is,
-unless you use a type checker and a plugin or you keep the union small and
-the tests honest. I still want the union. The `if status ==` soup is worse.
+Python still will not yell like Rust if you forget a branch. Keep the list
+of shapes small. Test each one.
 
 ---
 
-## 21:00–27:00 — Intentional immutability
-### Slides 14–16
+## 21:00–27:00 — Stop surprise edits
+### Slides 15–17
 
-### Slide 14 — The shared list
+### Slide 15 — The weather story
 
-Third function. Enrichment. Word count, language, topics.
+Third function. We add word count, language, topics.
 
-`src/ingest/before/pipeline.py` has a classic:
+There is a module-level list called `SHARED_TOPICS`. First article is
+about bike lanes, so we append `transportation`. Second article is the
+weather.
 
-```python
-SHARED_TOPICS: list[str] = ["news"]
+The weather story comes out tagged transportation.
 
-def enrich(article: dict) -> dict:
-    topics = article.setdefault("topics", SHARED_TOPICS)
-    if "bike" in body:
-        topics.append("transportation")
-    topics.append("ingested")
-    return article
-```
-
-Two articles go through. The first is about bike lanes. The second is the
-weather. The weather story comes out tagged `transportation`.
-
-Why? `setdefault` on a missing key does not copy. It aliases the module
-list. `append` is process-wide.
+Why? We did not copy the list. We handed out the *same* list. `append`
+is process-wide.
 
 This is the bug that fails depending on test order. This is the bug that
-shows up when you add concurrency. This is the bug an agent will recreate
-if the surrounding code mutates dicts in place, because mutating dicts in
-place looks like Python.
+gets worse with two requests at once. And it is the bug an AI will
+recreate, because mutating dicts in place looks like “normal Python.”
 
-*Audience ping.* Who has had a test pass alone and fail in CI because a
-list leaked? *Hands. Grin. Move.*
+*Hands, optional.* Who has had a test pass alone and fail in CI?
 
-### Slide 15 — Immutable by default, without the borrow checker
+### Slide 16 — Copy, don’t poke
 
-Rust bindings are immutable unless you write `mut`. The borrow checker is
-the famous part. The boring part is more useful to us: **if something
-changes, you can see the assignment.**
+Rust’s boring idea: if something changes, you should see the assignment.
 
-We are not doing ownership tonight. We are doing frozen dataclasses,
-tuples instead of lists, and `dataclasses.replace`.
+We are not doing the borrow checker tonight. We are doing: freeze the
+article, keep topics as a tuple, return a new copy with `replace`.
 
-```python
-@dataclass(frozen=True)
-class Article:
-    ...
-    topics: tuple[str, ...] = ()
+Building a fresh list *inside* the function is fine. Sharing that list
+with the next article is not.
 
-def tag_topics(article: Article) -> Article:
-    topics = ["news"]
-    if "bike" in article.body.lower():
-        topics.append("transportation")
-    return replace(article, topics=tuple(topics))
-```
+Each step takes an article and returns an article. The original the caller
+is holding is still the original. Tests get easier: you keep the input.
 
-Local mutation of a *new* list is fine. Sharing that list is not.
-
-`enrich` is a fold:
-
-```python
-def enrich(article: Article) -> Article:
-    for stage in (count_words, detect_language, tag_topics):
-        article = stage(article)
-    return article
-```
-
-Each stage is a function from Article to Article. The original object the
-caller held is still the original object. Tests become easy: you keep the
-input fixture.
-
-### Slide 16 — Demo and trade-offs
+### Slide 17 — Demo
 
 ```bash
 uv run python -m ingest pipeline --mode before
 ```
 
-Second topics include `transportation`. The note admits the leak.
+Second topics include transportation.
 
 ```bash
 uv run python -m ingest pipeline --mode after
 ```
 
-First has `transportation`. Second does not.
+First has it. Second does not.
 
-When to freeze:
+Freeze the values you pass around — queue payloads, domain objects. A
+local list inside a function is still fine. A giant buffer you cannot
+afford to copy? Mutation is the feature. Don’t freeze every integer
+because a slide said so.
 
-- Values that cross a boundary: queue payload, domain entity, cache key.
-- Pipelines with more than one stage.
-- Anything you might put in a set or use as a dict key later.
-
-When not to:
-
-- A local accumulator. Just use a list.
-- A buffer you cannot afford to copy. Mutation is the feature.
-- Freezing every `int` in a frozen wrapper because a slide said
-  "immutability."
-
-Python limitation: `frozen=True` is a speed bump. `object.__setattr__`
-still exists. Tuples can contain lists if you put lists in them. We used
-`tuple[str, ...]` on purpose.
+`frozen=True` is a speed bump, not a lock.
 
 ---
 
-## 27:00–36:00 — Agents, skills, demonstration
-### Slides 17–18
+## 27:00–36:00 — Teach the AI
+### Slides 18–19
 
-### Slide 17 — Agents copy what they can see
+### Slide 18 — It copies you
 
-Here is the uncomfortable part. If you paste `src/ingest/before/` into an
-agent and say "review this," you often get a review that is *correct* and
-still useless.
+If you paste the “before” code into an AI and say “review this,” you often
+get a review that is *correct* and still useless.
 
-I did not want that part of the talk to depend on wifi or on the model's
-mood. So the repo has a prepared demo in `examples/agent-demo/`.
+I did not want wifi to decide this section. The repo has a prepared demo.
 
-The naive review, condensed:
+Typical review, condensed:
 
-- Add a `TypedDict`.
-- Log the timeout.
-- Catch `Exception`.
-- Make an `Enum` for status.
-- Keep returning `None`.
+- Add a TypedDict
+- Log the timeout
+- Catch Exception
+- Make an Enum for status
+- Keep returning `None`
 
-That is `examples/agent-demo/naive-review.md`, and the code it implies is
-`naive-refactor.py`. It looks more professional. The three bug classes are
-still there. Logging a timeout that you still return as `None` does not
-give the caller a retry branch. An Enum plus `result: ArticleDict | None`
-still lets you complete without a result.
+It looks more professional. The three bugs are still there. A log line
+does not give the next function a retry branch. An Enum plus “result might
+be missing” still lets you complete with nothing.
 
-*Let that sit.*
+The AI is not bad at Python. It is extremely good at finishing the pattern
+in front of it. “Make it typed” is a pattern. “Don’t let done be empty” is
+a different pattern, and it is not the default.
 
-Agents are not bad at Python. They are extremely good at completing the
-pattern in front of them. "Make it typed" is a pattern. "Make the illegal
-state unconstructable" is a different pattern, and it is not the default.
-
-### Slide 18 — Skills are how we change the default
+### Slide 19 — Write the habit down
 
 A skill is a markdown file the agent is told to read *before* it reviews.
-Four of them ship in this repo:
+Four of them ship in the repo. Plain English:
 
-- `skills/explicit-error-handling`
-- `skills/model-valid-states`
-- `skills/intentional-immutability`
-- `skills/python-design-review` — the filter that says *do not gold-plate*
+- name the failure
+- don’t allow empty “done”
+- don’t share a list
+- and don’t gold-plate
 
-They are ordinary `SKILL.md` files. Claude Code, Codex, Cursor, and most
-other coding agents will take a folder of these. `docs/agent-guidance.md`
-is the repo-wide version.
+Same agent, same code, different instructions.
 
-The skilled review, condensed, from `examples/agent-demo/skilled-review.md`:
+Live, after the meetup, you can try `prompts/01` versus `prompts/02`.
+Tonight we use the prepared files, because I like finishing on time.
 
-1. `None` means two things — use `Result` with named errors.
-2. Status plus optional fields — use a tagged union.
-3. Shared list — freeze `Article`, return `replace(...)`.
-4. Trade-off sentence on each. No Result library.
+How to judge the diff:
 
-That is the same agent, same code, different instructions.
+- Did the tests pass? Necessary. Not enough. The *before* tests also pass.
+- Can a new caller misuse this without noticing?
+- Did we add types that don’t remove a real bug?
+- Would I want the next AI to copy this?
 
-Live, if you want to try this after the meetup: `prompts/01-review-without-skills.md`
-versus `prompts/02-review-with-skills.md`. Tonight we trust the prepared
-files, because I like finishing on time.
-
-How to evaluate the diff — this is the takeaway for agents:
-
-- Did tests pass? Necessary, not sufficient. The before-suite *also* passes.
-- Can a new caller misuse the function without noticing?
-- Did we add types that do not remove a bug class?
-- Would I want the next agent to copy this?
-
-If the skilled refactor is `src/ingest/after/`, you can grade it with:
-
-```bash
-uv run pytest
-uv run ruff check .
-uv run pyright
-```
-
-Green is the floor. The ceiling is whether `timeout` is a value.
+Green tests are the floor. The ceiling is whether timeout is a named
+thing, not a shrug.
 
 ---
 
-## 36:00–40:00 — Takeaways and questions
-### Slides 19–20
+## 36:00–40:00 — Steal this, then questions
+### Slides 20–21
 
-### Slide 19 — What I want you to steal
+### Slide 20
 
-You should be able to do these six things. Not next quarter. This week,
-on one function.
+Not next quarter. One function this week.
 
-1. Spot a `None` that means two things.
-2. Put expected failures in the return type when callers have to choose.
-3. Replace status-plus-optionals with a union of dataclasses.
-4. Make mutation obvious: new object, `replace`, tuples.
-5. Write one `SKILL.md` so your agent has a chance of doing 2–4.
-6. Judge AI output on maintainability, not on "it ran."
+Notice a `None` that means two things.
 
-You do not need all three patterns on every file. You need the one that
+Give those failures names, if someone has to choose what to do next.
+
+Don’t let a job be “done” with nothing in it.
+
+If you change data, return a new copy.
+
+Write four lines in a `SKILL.md` so the AI does it too.
+
+Don’t trust “it ran.” Ask if the next person can misuse it.
+
+You do not need all three habits on every file. You need the one that
 matches the bug you are actually shipping.
 
-### Slide 20 — Close
+### Slide 21 — Close
 
-Better Python is not more code, more abstractions, or another language.
-
-It is better design decisions — and teaching our AI coding agents to make
-those decisions with us.
+Better Python is not more code. It’s clearer decisions — and teaching the
+AI to make those with you.
 
 The repo is `thinking-in-rust-writing-in-python`. Slides, script, skills,
-and the ingest app are all in there. MIT. No cloud.
+and the little ingest app. MIT. No cloud.
 
-I will take questions. If your question is "should I rewrite my monolith
-tomorrow," the answer is no. Pick one boundary function. Give it a real
-error type. Put four lines in a skill. See if the next agent PR is less
+I will take questions. If the question is “should I rewrite the whole app
+tomorrow,” the answer is no. Pick one function. Give the failure a name.
+Put four lines in a skill. See if the next AI pull request is less
 embarrassing.
 
 *Stop. Water. Hands.*
 
 ---
 
-## Question bank (if the room goes quiet)
+## If the room goes quiet
 
-- **Isn't this just typed Python?** Types are the notation. The design is
-  "which values exist." You can add types and keep the illegal states.
-- **Why not `raises` in the docstring?** Because agents and callers read
-  signatures more than prose, and `None` is still one value.
-- **Why not Pydantic?** Fine at the edge. Inside the domain I want boring
-  dataclasses I can construct in tests without a context.
-- **Does `match` exhaustiveness work?** Not like Rust. Keep the union
-  small. Use Pyright. Add a test per variant.
-- **Can I use `returns` / `result` on PyPI?** You can. I did not, on
-  purpose. Two dataclasses survive a copy-paste into a skill.
-- **What about asyncio / concurrency?** The shared-list bug gets worse.
-  Frozen values get more valuable. The Result pattern is independent.
+- **Isn’t this just types?** Types are spelling. The design is “which
+  values are allowed to exist.” You can add types and keep the shrug.
+- **Why not a docstring?** People and AIs read the signature more than
+  the prose. `None` is still one value.
+- **Why not Pydantic?** Fine at the edge. Inside, boring dataclasses you
+  can build in a test without a ceremony.
+- **Does match catch everything?** Not like Rust. Keep the list of shapes
+  small. Add a test per shape.
+- **Can I use a Result library?** You can. I didn’t, on purpose. Two
+  classes survive a copy-paste into a skill.
 
-## Timing recovery
+## If you are running long
 
 | You are here | Cut this |
 |---|---|
-| 6 min in and still on slide 4 | Skip the show of hands. Jump to slide 5. |
-| Pattern 1 demo failed | Read the expected output from PRESENTER.md. Move. |
-| 25 min in and still on jobs | Skip the Pyright extra. Do pipeline in one command. |
-| 32 min in and no agent section | Skip naive-refactor.py. Read the two review summaries. |
-| 38 min in | Go to slide 20. Take one question. |
+| 6 min in, still on slide 4 | Skip the hands. Jump to slide 6. |
+| Pattern 1 demo failed | Read the expected output. Move. |
+| 25 min in, still on jobs | Skip the type-check extra. One pipeline command. |
+| 32 min in, no AI section | Skip the naive file. Read the two review summaries. |
+| 38 min in | Slide 21. One question. |
 
-## Repo paths you may want to open on the projector
+## Files to open on the projector if you want
 
 - `src/ingest/before/errors.py`
 - `src/ingest/after/ingest.py`
@@ -646,4 +446,3 @@ embarrassing.
 - `src/ingest/before/pipeline.py`
 - `examples/agent-demo/naive-review.md`
 - `examples/agent-demo/skilled-review.md`
-- `skills/python-design-review/SKILL.md`

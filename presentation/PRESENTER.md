@@ -1,6 +1,6 @@
 # Presenter guide
 
-Event: PySanAntonio. Duration: 40 minutes. Deck: `slides.html`.
+Event: Alamo Python, Geekdom, November 16. Duration: 40 minutes. Deck: `slides.html`.
 Script: `SCRIPT.md`. Code: `src/ingest/before` vs `src/ingest/after`.
 
 ## Before the talk
@@ -22,12 +22,12 @@ If wifi dies, skip live agents. Use `examples/agent-demo/`.
 
 | Min | Section | Slides | Demo |
 |---:|---|---|---|
-| 0–4 | Intro | 1–4 | none |
-| 4–12 | Explicit errors | 5–9 | `ingest demo` timeout before/after |
-| 12–21 | Valid states | 10–13 | `ingest jobs` missing before/after |
-| 21–27 | Immutability | 14–16 | `ingest pipeline` before/after |
-| 27–36 | Agents + skills | 17–18 | read naive vs skilled reviews |
-| 36–40 | Takeaways, Q&A | 19–20 | repo URL |
+| 0–5 | Intro + disclaimer | 1–5 | none |
+| 5–12 | Name the failure | 6–10 | `ingest demo` timeout before/after |
+| 12–21 | Don’t let “done” be empty | 11–14 | `ingest jobs` missing before/after |
+| 21–27 | Stop surprise edits | 15–17 | `ingest pipeline` before/after |
+| 27–36 | Agents + skills | 18–19 | read naive vs skilled reviews |
+| 36–40 | Takeaways, Q&A | 20–21 | repo URL |
 
 ## Demo commands (expected output)
 
