@@ -1093,38 +1093,47 @@ def build(path: Path) -> None:
 
     # 23 close
     s = new_slide(prs)
-    k = add_text(s, ML, Inches(1.5), Inches(12), Inches(0.35))
+    k = add_text(s, ML, Inches(1.3), Inches(8), Inches(0.35))
     write_lines(
         k.text_frame,
         [("ALAMO PYTHON", {"size": 13, "color": RUST, "bold": True, "space_after": 0})],
     )
-    q = add_text(s, ML, Inches(2.1), Inches(11.8), Inches(2.6))
+    q = add_text(s, ML, Inches(1.8), Inches(8.0), Inches(2.8))
     write_lines(
         q.text_frame,
         [(
             "Better Python is not more code. It’s clearer decisions — and"
             " giving our AI agents the mechanical guardrails to write safe"
             " software.",
-            {"size": 28, "color": INK, "font": DISPLAY, "space_after": 0},
+            {"size": 26, "color": INK, "font": DISPLAY, "space_after": 0},
         )],
     )
-    repo = add_text(s, ML, Inches(5.0), Inches(12), Inches(0.4))
+    repo = add_text(s, ML, Inches(4.8), Inches(8.0), Inches(0.4))
     write_lines(
         repo.text_frame,
         [(
-            "thinking-in-rust-writing-in-python",
-            {"size": 16, "color": RUST, "font": MONO, "space_after": 0},
+            "github.com/darwing1210/thinking-in-rust-writing-in-python",
+            {"size": 15, "color": RUST, "font": MONO, "space_after": 0},
         )],
     )
-    cap = add_text(s, ML, Inches(5.5), Inches(12), Inches(0.5))
+    cap = add_text(s, ML, Inches(5.35), Inches(8.0), Inches(0.5))
     write_lines(
         cap.text_frame,
         [(
             "Questions. Should you rewrite the whole app tomorrow? No. Pick one"
             " boundary function.",
-            {"size": 16, "color": MUTED, "space_after": 0},
+            {"size": 15, "color": MUTED, "space_after": 0},
         )],
     )
+    # Add QR code on right
+    qr_img = path.parent / "repo-qr.png"
+    if qr_img.exists():
+        s.shapes.add_picture(str(qr_img), Inches(9.1), Inches(1.8), Inches(3.4), Inches(3.4))
+        qlab = add_text(s, Inches(9.1), Inches(5.35), Inches(3.4), Inches(0.4))
+        write_lines(
+            qlab.text_frame,
+            [("SCAN FOR SLIDES & CODE", {"size": 12, "color": MUTED, "bold": True, "align": 1, "space_after": 0})],
+        )
     chrome(s)
     notes(s, "Read the quote. Repo name. MIT. No cloud. Questions.")
 
