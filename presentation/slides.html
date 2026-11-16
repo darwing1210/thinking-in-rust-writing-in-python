@@ -37,9 +37,15 @@
       overflow: hidden;
     }
     .stage {
-      width: min(100vw, calc(100vh * 16 / 9));
-      height: min(100vh, calc(100vw * 9 / 16));
-      position: relative;
+      /* Designed at a fixed 1600x900 and scaled to fit any screen, so a
+         1280x720 projector shows exactly what a laptop shows. */
+      width: 1600px;
+      height: 900px;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) scale(var(--fit, 1));
+      transform-origin: center;
       background:
         radial-gradient(ellipse 48% 92% at 108% 36%, rgba(232, 92, 54, 0.62), transparent 58%),
         radial-gradient(circle 340px at 86% 38%, rgba(240, 96, 56, 0.38), transparent 72%),
@@ -161,6 +167,11 @@
       width: 5.5rem;
       padding-top: 14px;
     }
+    table.compare th { width: auto; }
+    table.compare td { font-size: 21px; padding: 9px 18px 9px 0; }
+    table.compare td:first-child { color: var(--muted); font-size: 18px; }
+    .slide.story-slide { padding: 0; align-items: center; justify-content: center; }
+    .story-full { width: 100%; height: 100%; object-fit: contain; display: block; }
     .bar {
       position: absolute;
       left: 88px; right: 88px; bottom: 28px;
@@ -203,7 +214,7 @@
     }
     @media print {
       body { display: block; background: #fff; }
-      .stage { width: 11in; height: 6.1875in; page-break-after: always; }
+      .stage { position: relative; left: 0; top: 0; transform: none; width: 1600px; height: 900px; page-break-after: always; }
       .slide { display: flex !important; position: relative; }
       .bar, .progress, .notes { display: none !important; }
     }
@@ -236,6 +247,44 @@
       </div>
     </section>
 
+    <!-- About me -->
+    <section class="slide" data-notes="30–40 seconds. Keep it light. You'll talk about the Rust package at the end.">
+      <div class="row" style="grid-template-columns: 320px 1fr; gap: 56px; align-items: center;">
+        <img src="speaker.jpg" alt="Darwing Medina" style="width: 300px; height: 300px; border-radius: 50%; object-fit: cover; border: 4px solid var(--rust);" />
+        <div class="stack">
+          <div class="kicker">About me</div>
+          <h2>Hi, I’m Darwing Medina.</h2>
+          <ul>
+            <li>Python Software Engineer at <strong>Handraise</strong>, based in Austin. We track what the news, social media, and AI models say about a brand.</li>
+            <li>Writing Python for work since 2016: Django, FastAPI, data pipelines, and AI.</li>
+            <li>These days I review a lot of Python that an AI wrote. That’s how this talk started.</li>
+            <li>Some of my work is written in Rust. You’ll hear why at the end.</li>
+          </ul>
+          <p class="small">handraise.com · github.com/darwing1210 · linkedin.com/in/dmedina93</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Get the code -->
+    <section class="slide" data-notes="20 seconds. Let people scan. Everything tonight is in the repo.">
+      <div class="kicker">Follow along</div>
+      <div class="row" style="align-items: center;">
+        <div class="stack">
+          <h2>Get the code before we start.</h2>
+          <ul>
+            <li>Slides, the full script, and every demo.</li>
+            <li>Five agent skills you can copy.</li>
+            <li>No cloud. No network. MIT.</li>
+          </ul>
+          <p class="repo">github.com/darwing1210/thinking-in-rust-writing-in-python</p>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
+          <img src="repo-qr.png" alt="Scan for repo" style="width: 330px; height: 330px; border-radius: 6px; border: 3px solid var(--rust); background: #fff;" />
+          <span style="font-size: 15px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase;">Scan for slides, code & skills</span>
+        </div>
+      </div>
+    </section>
+
     <!-- Slide 2 -->
     <section class="slide" data-notes="Hands: who shipped Python an agent wrote part of in six months? Nod. Do not count.">
       <div class="kicker">Who this is for</div>
@@ -248,16 +297,16 @@
     </section>
 
     <!-- Slide 3 -->
-    <section class="slide" data-notes="Map the 40 minutes. 4 high-leverage architectural patterns, then the AI punchline.">
+    <section class="slide" data-notes="Map the 40 minutes. A short Rust story, four habits, then the AI part and a real story.">
       <div class="kicker">40 minutes</div>
-      <h2>Four deep habits. Then we teach them to AI.</h2>
+      <h2>Four habits. Then we teach them to AI.</h2>
       <table>
-        <tr><th>4 min</th><td>Why borrow from Rust: mechanical design</td></tr>
-        <tr><th>8 min</th><td>Explicit Errors — <code>Result</code> as a value</td></tr>
-        <tr><th>8 min</th><td>Typestates — gating methods by lifecycle state</td></tr>
-        <tr><th>6 min</th><td>Compiler Contracts — <code>assert_never</code> & <code>NewType</code></td></tr>
-        <tr><th>6 min</th><td>The Ownership Law — Aliasing XOR Mutability</td></tr>
-        <tr><th>8 min</th><td>The AI Sandbox — the compiler as the agent's leash</td></tr>
+        <tr><th>5 min</th><td>A short story: Rust’s playroom rules</td></tr>
+        <tr><th>5 min</th><td>1 · Errors — hand the failure back as a value</td></tr>
+        <tr><th>5 min</th><td>2 · Typestates — methods only exist when they make sense</td></tr>
+        <tr><th>5 min</th><td>3 · Contracts — <code>NewType</code>, <code>assert_never</code>, check data at the edge</td></tr>
+        <tr><th>6 min</th><td>4 · Ownership — one writer or many readers</td></tr>
+        <tr><th>10 min</th><td>AI agents, the type checker, and when I really write Rust</td></tr>
       </table>
     </section>
 
@@ -277,6 +326,31 @@
         <li>You are not being asked to rewrite anything in Rust.</li>
         <li>And this matters for AI: models copy the repo. Clear habits in the code → better generated code. Messy habits → more mess.</li>
       </ul>
+    </section>
+
+    <!-- Story 1 -->
+    <section class="slide story-slide" data-notes="Set up the story. 30 seconds. Smile.">
+      <img class="story-full" src="storybook/01-cover.jpg" alt="Rust’s playroom rules." />
+    </section>
+    <!-- Story 2 -->
+    <section class="slide story-slide" data-notes="One owner. Giving it away is a move. No copies, no secret remote control.">
+      <img class="story-full" src="storybook/02-ownership.jpg" alt="Every toy has one owner." />
+    </section>
+    <!-- Story 3 -->
+    <section class="slide story-slide" data-notes="Looking = &amp; borrow. Coloring = &amp;mut borrow. This is the rule behind our weather bug later.">
+      <img class="story-full" src="storybook/03-borrowing.jpg" alt="Look together. Color alone." />
+    </section>
+    <!-- Story 4 -->
+    <section class="slide story-slide" data-notes="Option and Result. Both come back in habit 1.">
+      <img class="story-full" src="storybook/04-boxes.jpg" alt="Open the box before you eat." />
+    </section>
+    <!-- Story 5 -->
+    <section class="slide story-slide" data-notes="[cut] Traits. Optional page. Python&#x27;s version is typing.Protocol.">
+      <img class="story-full" src="storybook/05-traits.jpg" alt="Badges, not family trees." />
+    </section>
+    <!-- Story 6 -->
+    <section class="slide story-slide" data-notes="Bridge to the talk: Pyright is our babysitter. Next: habit 1.">
+      <img class="story-full" src="storybook/06-door.jpg" alt="The babysitter checks before the door opens." />
     </section>
 
     <!-- Slide 6 -->
@@ -305,6 +379,7 @@
         <li>It worked? That’s <code>Ok</code>. It didn’t? That’s <code>Err</code>. Both are normal return values.</li>
         <li>The next function has to look at which one it got.</li>
         <li>Rust makes you. Python won’t. We can still do it.</li>
+        <li>Good news: with strict Pyright, <code>Article | None</code> already works like Rust’s <code>Option</code>. The problem is not <code>None</code>. It’s <code>None</code> meaning two things.</li>
       </ul>
     </section>
 
@@ -371,6 +446,7 @@ uv run python -m ingest demo --mode after \
           </ul>
         </div>
       </div>
+      <p class="small">Honest cost: Rust has <code>?</code> to pass an error up in one character. Python doesn’t. Every layer needs its own <code>match</code>.</p>
     </section>
 
     <!-- Slide 11 -->
@@ -389,15 +465,15 @@ class Job:
     </section>
 
     <!-- Slide 12 -->
-    <section class="slide" data-notes="Typestates: methods only exist where valid. Transitions consume old state.">
+    <section class="slide" data-notes="Typestates: methods only exist where valid. Rust consumes the old state; Python cannot — the old Pending variable still exists. We gate methods, not moves.">
       <div class="kicker">Pattern 2 · Rust inspiration</div>
       <h2>The Typestate pattern: methods only exist when valid.</h2>
       <ul>
-        <li>In Rust, state transitions consume <code>self</code>: <code>fn start(self) -> Processing</code>.</li>
+        <li>In Rust, <code>fn start(self) -> Processing</code> <em>uses up</em> the old job. You can’t touch it again.</li>
         <li>You cannot call <code>.finish()</code> on a <code>Pending</code> job. The method does not exist.</li>
         <li>No runtime checks like <code>if self.status != "running": raise</code>. It fails to compile.</li>
       </ul>
-      <p class="small">Move lifecycle invariants from 3 AM Sentry alerts to static analysis.</p>
+      <p class="small">Find the bug in your editor, not in a 3 AM alert.</p>
     </section>
 
     <!-- Slide 13 -->
@@ -493,6 +569,31 @@ fetch(my_id, my_url)  # Pyright ERROR!</pre>
       </div>
     </section>
 
+    <!-- Check at the edge -->
+    <section class="slide" data-notes="NewType is a label, not a check. Check once at the edge, trust inside. Pydantic for HTTP edges.">
+      <div class="kicker">Pattern 3 · The catch</div>
+      <h2>A type is a label. It does not check your data.</h2>
+      <div class="row">
+        <pre>Url("not a url")     <span class="tag-bad"># Pyright: fine.</span>
+JobId(some_url)      <span class="tag-bad"># Pyright: fine.</span>
+
+
+<span class="muted"># Types trust you.
+# Data from outside
+# should not be trusted.</span></pre>
+        <pre>def parse_url(raw: str) -> Result[
+    Url, ValidationFailed
+]:
+    parts = urlsplit(raw.strip())
+    if parts.scheme not in ("http", "https"):
+        return Err(ValidationFailed(("url",)))
+    if not parts.netloc:
+        return Err(ValidationFailed(("url",)))
+    return Ok(Url(raw.strip()))</pre>
+      </div>
+      <p class="small">Check once at the edge (HTTP, files, queues — Pydantic is great here). Inside the app, trust the type.</p>
+    </section>
+
     <!-- Slide 17 -->
     <section class="slide" data-notes="setdefault aliases SHARED_TOPICS. Weather story tagged transportation. Aliasing XOR Mutability.">
       <div class="kicker">Pattern 4 · Python problem</div>
@@ -508,15 +609,45 @@ def enrich(article: dict) -> dict:
       <p class="small">Two articles shared one list. The second one inherited the first one’s tags.</p>
     </section>
 
+    <!-- Ownership & borrowing -->
+    <section class="slide" data-notes="Callback to the story: Leo and the truck = move error. Coloring while looking = borrow error. Lifetimes: one sentence.">
+      <div class="kicker">Pattern 4 · Back to the playroom</div>
+      <h2>What the babysitter really says.</h2>
+      <div class="row">
+        <div class="stack">
+          <p class="pill">1 · Leo drives the truck he gave away</p>
+          <pre>let topics = vec!["news"];
+let a = topics;   // owner is now `a`
+println!("{:?}", topics);
+
+<span class="tag-bad">error[E0382]: borrow of moved
+value: `topics`</span></pre>
+        </div>
+        <div class="stack">
+          <p class="pill">2 · Someone colors while others look</p>
+          <pre>let mut topics = vec!["news"];
+let reader = &topics;   // borrow to read
+topics.push("transportation");
+println!("{:?}", reader);
+
+<span class="tag-bad">error[E0502]: cannot borrow `topics`
+as mutable because it is also
+borrowed as immutable</span></pre>
+        </div>
+      </div>
+      <p class="small"><code>&amp;</code> = borrow to read (many at once). <code>&amp;mut</code> = borrow to write (only one). <strong>Lifetimes:</strong> a borrow can’t live longer than the owner — Python’s closest cousin is a <code>with</code> block.</p>
+    </section>
+
     <!-- Slide 18 -->
-    <section class="slide" data-notes="Rust's Law: Aliasing XOR Mutability. Python's built-in borrow checker in memoryview.">
+    <section class="slide" data-notes="Rust's Law: Aliasing XOR Mutability. Python's tiny runtime borrow check in memoryview (not compile-time).">
       <div class="kicker">Pattern 4 · The Ownership Rule</div>
       <h2>Aliasing XOR Mutability.</h2>
       <p class="quote" style="font-size: 34px;">You can have many shared readers, OR one exclusive writer. Never both.</p>
       <ul>
-        <li>If multiple parts of your program see an object, <strong>do not mutate it in place</strong>.</li>
+        <li>Our weather bug is two kids coloring the same page. Rust refuses to compile it.</li>
+        <li>If more than one part of your program can see an object, <strong>don’t change it in place</strong>.</li>
         <li>Private mutation inside a function is fine (no alias exists yet).</li>
-        <li>Fun fact: Python has a built-in borrow checker! Try resizing a bytearray while a <code>memoryview</code> borrows it: raises <code>BufferError</code>!</li>
+        <li>Fun fact: Python has a tiny <em>runtime</em> borrow check. Resize a bytearray while a <code>memoryview</code> holds it: <code>BufferError</code>.</li>
       </ul>
     </section>
 
@@ -540,12 +671,12 @@ uv run python -m ingest pipeline --mode after   <span class="tag-ok"># isolated<
     <!-- Slide 20 -->
     <section class="slide" data-notes="The real punchline: the compiler as the agent's leash. Strict types turn AI into a self-correcting coder.">
       <div class="kicker">The AI Punchline</div>
-      <h2>The compiler as the agent’s leash.</h2>
+      <h2>The type checker keeps the agent on a leash.</h2>
       <div class="row">
         <div class="stack">
           <p class="pill">Sloppy Python (Dicts & None)</p>
           <ul class="split-list">
-            <li>AI hallucinates invalid states</li>
+            <li>AI invents states that should not exist</li>
             <li>Swaps string arguments</li>
             <li>Forgets match branches</li>
             <li>Tests pass; production breaks</li>
@@ -563,30 +694,78 @@ uv run python -m ingest pipeline --mode after   <span class="tag-ok"># isolated<
       </div>
     </section>
 
-    <!-- Slide 21 -->
-    <section class="slide" data-notes="Five SKILL.md files. Write the habit down so the agent follows it.">
-      <div class="kicker">Skills</div>
-      <h2>Write the habits down. Then the agent uses them.</h2>
-      <ul>
-        <li><code>skills/explicit-error-handling</code> — name failures as <code>Ok | Err</code></li>
-        <li><code>skills/model-valid-states</code> — typestates & method gating</li>
-        <li><code>skills/type-driven-contracts</code> — <code>NewType</code> & <code>assert_never</code></li>
-        <li><code>skills/intentional-immutability</code> — Aliasing XOR Mutability</li>
-        <li><code>skills/python-design-review</code> — filter for simplicity</li>
-      </ul>
-      <p class="small">A markdown file the agent reads first. Portable across Claude Code, Cursor, Codex.</p>
+    <!-- Turn it on -->
+    <section class="slide" data-notes="Three steps: strict config, CI, one line for the agent. Skills are in the repo.">
+      <div class="kicker">Monday morning</div>
+      <h2>Turn the leash on. Three small steps.</h2>
+      <div class="row">
+        <pre><span class="muted"># 1. pyproject.toml</span>
+[tool.pyright]
+typeCheckingMode = "strict"
+
+<span class="muted"># 2. CI (or pre-commit)</span>
+uv run pyright
+
+<span class="muted"># 3. Agent instructions</span>
+"Before you finish, run
+ uv run pyright and fix
+ every error."</pre>
+        <div class="stack">
+          <p class="pill">Five skills in the repo</p>
+          <ul class="split-list">
+            <li><code>explicit-error-handling</code></li>
+            <li><code>model-valid-states</code></li>
+            <li><code>type-driven-contracts</code></li>
+            <li><code>intentional-immutability</code></li>
+            <li><code>python-design-review</code></li>
+          </ul>
+          <p class="small">Markdown files the agent reads first. Claude Code, Cursor, Codex, Hermes.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Real Rust -->
+    <section class="slide" data-notes="Real story, 90 seconds. The firehose: a Rust service that never stops. Point at Result&lt;Option&lt;String&gt;&gt; and the ? marks: the playroom rules, in production.">
+      <div class="kicker">Real life</div>
+      <h2>When I do write Rust: the news firehose.</h2>
+      <div class="row" style="grid-template-columns: 1.1fr 1fr;">
+        <ul style="font-size: 21px;">
+          <li>A live stream of news articles comes in all day, every day.</li>
+          <li><code>hr-firehose</code> is a Rust service: it reads the stream, saves every article to S3, and indexes it for search.</li>
+          <li>It never stops. So it has to be fast, small, and boring.</li>
+          <li>Also in Rust: <code>handytools</code>, our URL clean-up package that Python calls through PyO3.</li>
+          <li>The API, the jobs, the ML? Still Python.</li>
+        </ul>
+        <pre style="font-size: 16px; padding: 16px 20px;"><span class="muted">// from hr-firehose (trimmed)</span>
+async fn call_api(&amp;self)
+    -> Result&lt;Option&lt;String&gt;&gt;
+{
+    let url = self.request_url()?;
+    let body = self.http.get(url)
+        .send().await
+        .context("request failed")?
+        .text().await
+        .context("bad body")?;
+    if no_articles {
+        return Ok(None);
+    }
+    <span class="muted">// ...</span>
+}</pre>
+      </div>
+      <p class="small">Result of an Option: it can fail, and even when it works, there may be nothing new. Every <code>?</code> passes the error up.</p>
     </section>
 
     <!-- Slide 22 -->
     <section class="slide" data-notes="Five takeaways you can use this week on one function.">
       <div class="kicker">Steal this</div>
-      <h2>Five architectural habits for this week.</h2>
+      <h2>Six habits. Pick one function this week.</h2>
       <ul>
-        <li><strong>Return failures as values:</strong> Stop returning <code>None</code> for two different problems.</li>
-        <li><strong>Typestates:</strong> Gate methods on state dataclasses so illegal calls don't type-check.</li>
-        <li><strong>Zero-cost IDs:</strong> Wrap raw strings with <code>NewType</code> to stop argument transposition.</li>
-        <li><strong>Compile-time exhaustiveness:</strong> End closed matches with <code>assert_never</code>.</li>
-        <li><strong>Aliasing XOR Mutability:</strong> Private mutation ok; shared mutation forbidden.</li>
+        <li><strong>Hand failures back:</strong> stop using <code>None</code> for two different problems.</li>
+        <li><strong>Typestates:</strong> put each method only on the state where it makes sense.</li>
+        <li><strong>Label your IDs:</strong> <code>NewType</code> so you can’t swap them.</li>
+        <li><strong>Close every <code>match</code>:</strong> end it with <code>assert_never</code>.</li>
+        <li><strong>Check data at the edge:</strong> then trust the type inside.</li>
+        <li><strong>One writer or many readers:</strong> change local data freely; don’t change shared data.</li>
       </ul>
     </section>
 
@@ -608,7 +787,7 @@ uv run python -m ingest pipeline --mode after   <span class="tag-ok"># isolated<
 
     <div class="bar">
       <span>Alamo Python · Stealing good ideas from Rust</span>
-      <span id="count">1 / 23</span>
+      <span id="count">1 / 34</span>
     </div>
     <div class="progress"><span id="prog"></span></div>
     <div class="notes" id="notes"></div>
@@ -660,6 +839,12 @@ uv run python -m ingest pipeline --mode after   <span class="tag-ok"># isolated<
       }
     });
 
+    function fit() {
+      const s = Math.min(window.innerWidth / 1600, window.innerHeight / 900);
+      document.getElementById("stage").style.setProperty("--fit", s);
+    }
+    window.addEventListener("resize", fit);
+    fit();
     start();
   </script>
 </body>

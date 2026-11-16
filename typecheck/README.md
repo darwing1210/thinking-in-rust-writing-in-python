@@ -2,13 +2,15 @@
 
 `typecheck/valid/` is included in the Pyright project and must stay clean.
 
-`typecheck/invalid/` is excluded from the default Pyright run. These files
+`typecheck/invalid/` is excluded from the default Pyright run. Because it is
+excluded, `uv run pyright typecheck/invalid/<file>.py` reports **0 errors** —
+always pass `-p typecheck/invalid` (works for a single file too). These files
 exist to show what the type checker *can* catch when you borrow Rust's
 guarantees:
 
 ```bash
 uv run pyright                              # valid examples + src + tests (clean)
-uv run pyright --project typecheck/invalid  # expected to report 7 errors
+uv run pyright --project typecheck/invalid  # expected to report 8 errors
 ```
 
 The second command reports compile-time errors:

@@ -14,7 +14,7 @@ from ingest.after.jobs import (
 )
 from ingest.after.pipeline import Article, enrich
 from ingest.after.result import Err, Ok, Result
-from ingest.after.types import ArticleId, JobId, Url
+from ingest.after.types import ArticleId, JobId, Url, parse_url
 
 __all__ = [
     "Article",
@@ -37,5 +37,6 @@ __all__ = [
     "enrich",
     "finish",
     "ingest",
+    "parse_url",
     "start",
 ]

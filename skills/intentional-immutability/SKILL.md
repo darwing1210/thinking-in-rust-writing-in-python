@@ -73,12 +73,13 @@ def enrich(article: Article) -> Article:
 Now, no caller can mutate an article out from underneath another worker.
 Tests can reuse fixtures without fear of mutation leaks.
 
-## Fun Fact: Python's built-in borrow checker
-Did you know Python has a built-in borrow checker at runtime?
+## Fun Fact: Python's tiny runtime borrow check
+Python has a small runtime borrow check hiding in the buffer protocol.
 If you create a `memoryview(bytearray(b"abc"))`, trying to mutate or resize the
 bytearray while the view exists raises:
-`BufferError: Existing exports of data: object cannot be re-allocated`.
-Python core developers had to invent a borrow check to prevent memory corruption!
+`BufferError: Existing exports of data: object cannot be re-sized`.
+It is a runtime count of open views, not a compile-time borrow checker, but it
+enforces the same rule: while someone is reading, nobody resizes.
 
 ## Review checklist
 

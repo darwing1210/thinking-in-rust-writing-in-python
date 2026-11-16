@@ -17,19 +17,24 @@ Open `presentation/slides.html` in a browser (or upload `stealing-good-ideas-fro
 Press `N` once so you know where notes live, then hide them.
 Have a terminal tab ready in the repo root.
 
-If wifi dies, skip live agents. Use `examples/agent-demo/`.
+If wifi dies, skip live agents. Use `examples/agent-demo/`. Keep `presentation/DEMO.md` open for the exact commands.
 
 ## Timing
 
 | Min | Section | Slides | Demo |
 |---:|---|---|---|
-| 0–5 | Intro + disclaimer | 1–5 | none |
-| 5–12 | Explicit Errors | 6–10 | `ingest demo` timeout before/after |
-| 12–20 | Typestates & Lifecycle Gating | 11–14 | `cannot_finish_pending_job.py` |
-| 20–26 | Compiler Contracts | 15–16 | `NewType` & `assert_never` checks |
-| 26–32 | Ownership: Aliasing XOR Mutability | 17–19 | `ingest pipeline` before/after |
-| 32–37 | The AI Sandbox | 20–21 | read naive vs skilled reviews |
-| 37–40 | Takeaways, Q&A | 22–23 | repo URL |
+| 0–5 | Title, about me, get the code (QR), intro, disclaimer | 1–7 | none |
+| 5–9:30 | Story: Rust's playroom rules (slide 12 is optional) | 8–13 | none |
+| 9:30–14 | Habit 1: hand the failure back | 14–18 | `ingest demo` timeout before/after |
+| 14–19 | Habit 2: typestates | 19–22 | `cannot_finish_pending_job.py` |
+| 19–24 | Habit 3: `NewType`, `assert_never`, check at the edge | 23–25 | none (slides show the errors) |
+| 24–30:30 | Habit 4: back to the playroom, many readers or one writer | 26–29 | `ingest pipeline` before/after |
+| 30:30–35:30 | AI agents + turn the leash on | 30–31 | read naive vs skilled reviews + rerun typestate Pyright check |
+| 35:30–37:30 | When I really write Rust | 32 | none |
+| 37:30–40 | Six habits, close, Q&A | 33–34 | repo URL / QR |
+
+Before the talk: confirm what you can say publicly about the work Rust
+package (slide 32): `hr-firehose` and `handytools` are named on the slide.
 
 ## Demo commands (expected output)
 
@@ -57,7 +62,7 @@ retryable: timed out fetching https://news.example/timeout
 ### 2. Typestates: Compile-time method gating
 
 ```bash
-uv run pyright typecheck/invalid/cannot_finish_pending_job.py
+uv run pyright -p typecheck/invalid typecheck/invalid/cannot_finish_pending_job.py
 ```
 
 ```
@@ -68,7 +73,7 @@ error: Cannot access attribute "finish" for class "Pending"
 ### 3. Compiler Contracts: Swapped IDs & Non-exhaustive Match
 
 ```bash
-uv run pyright typecheck/invalid/swapped_newtype_arguments.py
+uv run pyright -p typecheck/invalid typecheck/invalid/swapped_newtype_arguments.py
 ```
 
 ```
@@ -76,7 +81,7 @@ error: Argument of type "Url" cannot be assigned to parameter "job_id" of type "
 ```
 
 ```bash
-uv run pyright typecheck/invalid/non_exhaustive_match.py
+uv run pyright -p typecheck/invalid typecheck/invalid/non_exhaustive_match.py
 ```
 
 ```

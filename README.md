@@ -7,7 +7,7 @@ Companion repository for a 40-minute talk at Alamo Python (Geekdom, November 16)
 You do not need to write Rust to think like a Rust developer. And when AI
 writes your Python, you can give it mechanical compiler guardrails.
 
-This repo contains a self-contained teaching app, a 23-slide deck (HTML and PPTX),
+This repo contains a self-contained teaching app, a 34-slide deck (HTML and PPTX),
 a timed speaker script, and five portable agent skills. Zero cloud, zero network.
 
 ## What you will find
@@ -16,12 +16,12 @@ a timed speaker script, and five portable agent skills. Zero cloud, zero network
 |---|---|
 | `src/ingest/before/` | Realistic backend code with subtle design bugs |
 | `src/ingest/after/` | The same service refactored with the four patterns |
-| `tests/` | 28 automated tests encoding both bugs and fixes |
+| `tests/` | 31 automated tests encoding both bugs and fixes |
 | `typecheck/` | What Pyright catches (typestates, NewType, assert_never) |
 | `skills/` | Five reusable agent skills (`SKILL.md`) |
 | `prompts/` | Prompts for reproducing the agent demo |
 | `examples/agent-demo/` | Prepared naive vs skilled AI reviews |
-| `presentation/slides.html` | 23-slide interactive HTML deck (styled after Alamo Python flyer) |
+| `presentation/slides.html` | 34-slide interactive HTML deck (styled after Alamo Python flyer) |
 | `presentation/stealing-good-ideas-from-rust.pptx` | 16:9 Google Slides ready deck with full speaker notes |
 | `presentation/SCRIPT.md` | Full 40-minute conversational speaker script |
 | `presentation/PRESENTER.md` | Stage cheat-sheet with timing and demo commands |
@@ -75,10 +75,10 @@ uv run python -m ingest demo --mode before --url https://news.example/timeout
 uv run python -m ingest demo --mode after --url https://news.example/timeout
 
 # 2. Typestate compile-time check
-uv run pyright typecheck/invalid/cannot_finish_pending_job.py
+uv run pyright -p typecheck/invalid typecheck/invalid/cannot_finish_pending_job.py
 
 # 3. NewType argument swap check
-uv run pyright typecheck/invalid/swapped_newtype_arguments.py
+uv run pyright -p typecheck/invalid typecheck/invalid/swapped_newtype_arguments.py
 
 # 4. Ownership / Pipeline isolation
 uv run python -m ingest pipeline --mode before
